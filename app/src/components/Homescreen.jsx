@@ -9,6 +9,8 @@ import ColdWaterModal from './ColdWaterModal';
 import { generateStreakStoryCanvas } from '../utils/storyCanvas';
 import { BADGE_DEFINITIONS } from '../constants/badges';
 import { HEALTH_RECOVERY_DATA } from '../constants/healthRecovery';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export default function Homescreen({ appState, updateAppState, onReset }) {
   const { 
@@ -874,13 +876,13 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
   return (
     <div className="min-h-screen max-w-md mx-auto flex flex-col justify-between pb-24 relative bg-[#FAF8FF]">
       {/* HEADER ELEGAN & MINIMALIS */}
-      <div className="px-5 pt-6 pb-4 flex justify-between items-center">
+      <div className="px-5 pt-6 pb-4 flex justify-between items-center gap-2">
         <div 
           onClick={() => setActiveSheet('profile')}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-2.5 cursor-pointer group min-w-0 flex-1"
         >
           {/* Avatar User (Klik untuk Buka Profil) */}
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#6367FF] to-[#8494FF] p-0.5 shadow-md shadow-[#6367FF]/20 active:scale-95 transition-transform overflow-hidden">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#6367FF] to-[#8494FF] p-0.5 shadow-md shadow-[#6367FF]/20 active:scale-95 transition-transform overflow-hidden flex-shrink-0">
             {user.photoUrl ? (
               <img 
                 src={user.photoUrl} 
@@ -888,20 +890,20 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 className="w-full h-full object-cover rounded-[14px]"
               />
             ) : (
-              <div className="w-full h-full rounded-[14px] bg-white flex items-center justify-center font-black text-[#6367FF] text-base">
+              <div className="w-full h-full rounded-[14px] bg-white flex items-center justify-center font-black text-[#6367FF] text-sm">
                 {(user.name || user.username || 'R').charAt(0).toUpperCase()}
               </div>
             )}
           </div>
 
-          <div>
-            <span className="text-[11px] font-bold text-[#6D6796] uppercase tracking-wider block">
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-bold text-[#6D6796] uppercase tracking-wider block truncate">
               {lang === 'id' ? 'Selamat Berjuang,' : 'Keep Fighting,'}
             </span>
-            <div className="font-black text-lg text-[#1E1B38] tracking-tight flex items-center gap-1.5 group-hover:text-[#6367FF] transition-colors">
-              <span>@{user.username || user.name || 'pejuang'}</span>
+            <div className="font-black text-base text-[#1E1B38] tracking-tight flex items-center gap-1.5 group-hover:text-[#6367FF] transition-colors min-w-0">
+              <span className="truncate max-w-[130px] sm:max-w-[180px]">@{user.username || user.name || 'pejuang'}</span>
               {!isRegistered && (
-                <span className="text-[9px] font-extrabold text-[#6D6796] bg-[#ECE9FF] px-2 py-0.5 rounded-full border border-[#C9BEFF]">
+                <span className="text-[9px] font-extrabold text-[#6D6796] bg-[#ECE9FF] px-1.5 py-0.2 rounded-full border border-[#DDD5FF] flex-shrink-0">
                   {lang === 'id' ? 'Tamu' : 'Guest'}
                 </span>
               )}
@@ -910,7 +912,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
         </div>
 
         {/* Branding Tipografi: AgainstMe (A & M Kapital) */}
-        <div className="flex items-center gap-1 select-none">
+        <div className="flex items-center select-none flex-shrink-0 pl-1">
           <span className="font-black text-sm tracking-tight text-[#1E1B38]">
             <span className="text-[#6367FF]">A</span>gainst<span className="text-[#6367FF]">M</span>e
           </span>
@@ -4054,39 +4056,81 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                       lang
                     });
 
-                    canvas.toBlob(blob => {
-                      if (!blob) return;
-                      const file = new File([blob], `againstme-story-${timeDiff.days}hari.png`, { type: 'image/png' });
+                    const base64Data = canvas.toDataURL('image/png');
 
-                      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        navigator.share({
-                          files: [file],
+                    // 1. Coba Native Share Android (Capacitor Share + Filesystem)
+                    try {
+                      const fileName = `againstme_${timeDiff.days}hari_${Date.now()}.png`;
+                      const savedFile = await Filesystem.writeFile({
+                        path: fileName,
+                        data: base64Data,
+                        directory: Directory.Cache
+                      });
+
+                      const canShareResult = await Share.canShare();
+                      if (canShareResult && canShareResult.value) {
+                        await Share.share({
                           title: 'AgainstMe Streak Story',
-                          text: `Saya sudah bersih ${timeDiff.days} hari!`
-                        }).catch(err => console.log('Share dismissed', err));
-                      } else {
-                        const url = canvas.toDataURL('image/png');
-                        const link = document.createElement('a');
-                        link.download = `againstme-story-${timeDiff.days}hari.png`;
-                        link.href = url;
-                        link.click();
-                        showToast(lang === 'id' ? 'Story 9:16 Full HD berhasil didownload!' : '9:16 Full HD Story downloaded!');
+                          text: lang === 'id' 
+                            ? `Saya sudah bersih dan berjuang selama ${timeDiff.days} hari di AgainstMe! #AgainstMe` 
+                            : `I have been clean and fighting for ${timeDiff.days} days on AgainstMe! #AgainstMe`,
+                          url: savedFile.uri,
+                          dialogTitle: lang === 'id' ? 'Bagikan Perjalanan Pemulihan' : 'Share Recovery Journey'
+                        });
+                        return;
                       }
-                    }, 'image/png');
+                    } catch (nativeShareErr) {
+                      console.log('Capacitor native share skipped or cancelled', nativeShareErr);
+                    }
+
+                    // 2. Fallback Web Share API (Standar Browser Mobile)
+                    if (navigator.share) {
+                      canvas.toBlob(async blob => {
+                        if (!blob) return;
+                        const file = new File([blob], `againstme-story-${timeDiff.days}hari.png`, { type: 'image/png' });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                          try {
+                            await navigator.share({
+                              files: [file],
+                              title: 'AgainstMe Streak Story',
+                              text: `Saya sudah bersih ${timeDiff.days} hari di AgainstMe!`
+                            });
+                            return;
+                          } catch (e) {
+                            console.log('Web share cancelled', e);
+                          }
+                        }
+                      }, 'image/png');
+                    } else {
+                      // 3. Fallback Download Manual jika device tidak support share popup
+                      const link = document.createElement('a');
+                      link.download = `againstme-story-${timeDiff.days}hari.png`;
+                      link.href = base64Data;
+                      link.click();
+                      showToast(lang === 'id' ? 'Story berhasil disimpan ke galeri HP!' : 'Story saved to gallery!');
+                    }
                   } catch (error) {
-                    showToast(lang === 'id' ? 'Gagal memproses gambar.' : 'Failed to process image.');
+                    console.error('Share process error:', error);
+                    showToast(lang === 'id' ? 'Gagal memproses gambar story.' : 'Failed to process story image.');
                   }
                 }}
-                className="w-full py-3.5 rounded-2xl bg-[#6367FF] hover:bg-[#4F53EB] text-white font-black text-sm shadow-lg shadow-[#6367FF]/40 active:scale-95 transition-all"
+                className="w-full py-3.5 rounded-2xl bg-[#6367FF] hover:bg-[#4F53EB] text-white font-black text-sm shadow-lg shadow-[#6367FF]/40 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                Share
+                <svg className="w-4 h-4 stroke-white" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3"/>
+                  <circle cx="6" cy="12" r="3"/>
+                  <circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                <span>{lang === 'id' ? 'Bagikan ke Media Sosial / Chat' : 'Share to Social / Apps'}</span>
               </button>
 
               <button
                 onClick={() => setIsShareCardOpen(false)}
                 className="w-full py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white/80 font-bold text-xs active:scale-95 transition-all"
               >
-                Tutup
+                {lang === 'id' ? 'Tutup' : 'Close'}
               </button>
             </div>
           </div>
