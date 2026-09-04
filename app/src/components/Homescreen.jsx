@@ -131,10 +131,6 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
   const fileInputRef = useRef(null);
   const backupFileInputRef = useRef(null);
 
-  // State PWA Install Prompt
-  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
-  const [isAppInstalled, setIsAppInstalled] = useState(false);
-
   // Edit Goal (Barang Impian) state
   const activeGoal = habitData.savingsGoal || appState.sharedGoal || {
     name: 'Kaset Game GTA 6 & PS5 Pro',
@@ -194,33 +190,6 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, [habitData.startDate]);
-
-  // Listener event PWA BeforeInstallPrompt
-  useEffect(() => {
-    // Cek apakah app sudah running di standalone PWA
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-      setIsAppInstalled(true);
-    }
-
-    function handleBeforeInstall(e) {
-      e.preventDefault();
-      setDeferredInstallPrompt(e);
-    }
-
-    function handleAppInstalled() {
-      setIsAppInstalled(true);
-      setDeferredInstallPrompt(null);
-      showToast(lang === 'id' ? 'Aplikasi AgainstMe berhasil dipasang!' : 'AgainstMe installed successfully!');
-    }
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, [lang]);
 
   // Sync state lokal chat ke global appState saat pesan bertambah
   function updateAndPersistChat(newMessages) {
@@ -607,22 +576,6 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
     setPostInput('');
     showToast(lang === 'id' ? 'Ceritamu terkirim ke komunitas!' : 'Post published to community!');
-  }
-
-  // Handle Install PWA Native
-  async function handleInstallPwa() {
-    if (deferredInstallPrompt) {
-      deferredInstallPrompt.prompt();
-      const choiceResult = await deferredInstallPrompt.userChoice;
-      if (choiceResult.outcome === 'accepted') {
-        showToast(lang === 'id' ? 'Memasang AgainstMe ke layar utama...' : 'Installing AgainstMe...');
-      }
-      setDeferredInstallPrompt(null);
-    } else {
-      showToast(lang === 'id' 
-        ? 'Buka menu browser (titik tiga atau tombol Share) lalu pilih "Tambahkan ke Layar Utama"' 
-        : 'Open browser menu & tap "Add to Home Screen"');
-    }
   }
 
   // Handle Ekspor Backup JSON
