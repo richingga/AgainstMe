@@ -695,13 +695,13 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
   async function handleAuthSubmit(e) {
     e.preventDefault();
     if (authMode === 'register') {
-      const cleanUsername = (authUsername || authName || 'rocky_warrior').toLowerCase().replace(/[^a-z0-9_]/g, '');
+      const cleanUsername = (authUsername || 'pejuang').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8);
       const registeredUser = {
         ...user,
-        name: authName.trim() || 'Rocky',
+        name: cleanUsername,
         username: cleanUsername,
         email: authEmail.trim(),
-        avatar: (authName.trim() || 'R').charAt(0).toUpperCase()
+        avatar: cleanUsername.charAt(0).toUpperCase()
       };
 
       try {
@@ -771,8 +771,8 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
   function handleSaveProfile(e) {
     e.preventDefault();
-    const cleanUsername = editUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, '') || user.username;
-    const cleanName = editName.trim() || user.name || 'Rocky';
+    const cleanUsername = editUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8) || user.username;
+    const cleanName = cleanUsername;
     const cleanPhoto = editPhotoPreview;
 
     const updatedUser = {
@@ -875,44 +875,28 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
   return (
     <div className="min-h-screen max-w-md mx-auto flex flex-col justify-between pb-24 relative bg-[#FAF8FF]">
-      {/* HEADER ELEGAN & MINIMALIS */}
-      <div className="px-5 pt-6 pb-4 flex justify-between items-center gap-2">
+      {/* HEADER ELEGAN & MINIMALIS (CLEAN: HANYA AVATAR & BRANDING) */}
+      <div className="px-5 pt-6 pb-4 flex justify-between items-center">
+        {/* Avatar User (Klik untuk Buka Profil) */}
         <div 
           onClick={() => setActiveSheet('profile')}
-          className="flex items-center gap-2.5 cursor-pointer group min-w-0 flex-1"
+          className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#6367FF] to-[#8494FF] p-0.5 shadow-md shadow-[#6367FF]/20 active:scale-95 transition-transform overflow-hidden cursor-pointer"
         >
-          {/* Avatar User (Klik untuk Buka Profil) */}
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#6367FF] to-[#8494FF] p-0.5 shadow-md shadow-[#6367FF]/20 active:scale-95 transition-transform overflow-hidden flex-shrink-0">
-            {user.photoUrl ? (
-              <img 
-                src={user.photoUrl} 
-                alt="Profile" 
-                className="w-full h-full object-cover rounded-[14px]"
-              />
-            ) : (
-              <div className="w-full h-full rounded-[14px] bg-white flex items-center justify-center font-black text-[#6367FF] text-sm">
-                {(user.name || user.username || 'R').charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <span className="text-[10px] font-bold text-[#6D6796] uppercase tracking-wider block truncate">
-              {lang === 'id' ? 'Selamat Berjuang,' : 'Keep Fighting,'}
-            </span>
-            <div className="font-black text-base text-[#1E1B38] tracking-tight flex items-center gap-1.5 group-hover:text-[#6367FF] transition-colors min-w-0">
-              <span className="truncate max-w-[130px] sm:max-w-[180px]">@{user.username || user.name || 'pejuang'}</span>
-              {!isRegistered && (
-                <span className="text-[9px] font-extrabold text-[#6D6796] bg-[#ECE9FF] px-1.5 py-0.2 rounded-full border border-[#DDD5FF] flex-shrink-0">
-                  {lang === 'id' ? 'Tamu' : 'Guest'}
-                </span>
-              )}
+          {user.photoUrl ? (
+            <img 
+              src={user.photoUrl} 
+              alt="Profile" 
+              className="w-full h-full object-cover rounded-[14px]"
+            />
+          ) : (
+            <div className="w-full h-full rounded-[14px] bg-white flex items-center justify-center font-black text-[#6367FF] text-sm">
+              {(user.username || user.name || 'P').charAt(0).toUpperCase()}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Branding Tipografi: AgainstMe (A & M Kapital) */}
-        <div className="flex items-center select-none flex-shrink-0 pl-1">
+        <div className="flex items-center select-none">
           <span className="font-black text-sm tracking-tight text-[#1E1B38]">
             <span className="text-[#6367FF]">A</span>gainst<span className="text-[#6367FF]">M</span>e
           </span>
@@ -1249,27 +1233,26 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
               }}
               className="bg-white border border-[#DDD5FF] rounded-3xl p-5 shadow-sm text-left cursor-pointer hover:border-[#6367FF] transition-all active:scale-[0.99] group relative overflow-hidden"
             >
-              {/* Overlay Kunci Khusus Mode Tamu */}
+              {/* Overlay Kunci Khusus Mode Tamu (Blur Bersih & Rapi Tanpa Tombol Buka Kunci) */}
               {!isRegistered && (
-                <div className="absolute inset-0 bg-[#FAF8FF]/85 backdrop-blur-[2px] z-10 flex items-center justify-between px-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-[#6367FF]/15 text-[#6367FF] flex items-center justify-center">
-                      <svg className="w-4 h-4 stroke-[#6367FF]" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <span className="text-xs font-black text-[#1E1B38] block">
-                        {lang === 'id' ? 'Garis Waktu Terkunci' : 'Recovery Timeline Locked'}
-                      </span>
-                      <span className="text-[10px] text-[#6D6796]">
-                        {lang === 'id' ? 'Daftar akun untuk buka analisa biologis' : 'Register to unlock biological stages'}
-                      </span>
-                    </div>
+                <div 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    requireRegistration(lang === 'id' ? 'melihat Garis Waktu Pemulihan Tubuh' : 'view Body Recovery Timeline');
+                  }}
+                  className="absolute inset-0 bg-[#FAF8FF]/80 backdrop-blur-md z-10 flex flex-col items-center justify-center p-4 cursor-pointer text-center"
+                >
+                  <div className="w-9 h-9 rounded-2xl bg-white border border-[#DDD5FF] text-[#6367FF] flex items-center justify-center mb-1.5 shadow-sm">
+                    <svg className="w-4 h-4 stroke-[#6367FF]" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
                   </div>
-                  <span className="px-2.5 py-1 rounded-lg bg-[#6367FF] text-white font-black text-[10px] shadow-sm">
-                    {lang === 'id' ? 'Buka Kunci' : 'Unlock'}
+                  <span className="text-xs font-black text-[#1E1B38]">
+                    {lang === 'id' ? 'Garis Waktu Pemulihan Terkunci' : 'Recovery Timeline Locked'}
+                  </span>
+                  <span className="text-[10px] text-[#6D6796] mt-0.5">
+                    {lang === 'id' ? 'Ketuk untuk mendaftar akun' : 'Tap to register an account'}
                   </span>
                 </div>
               )}
@@ -1325,40 +1308,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
           );
         })()}
 
-        {/* KARTU STREAK FREEZE DI BAWAH GARIS WAKTU */}
-        <div className="p-4 bg-white border border-[#DDD5FF] rounded-3xl flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#FAF8FF] border border-[#DDD5FF] flex items-center justify-center text-[#6367FF]">
-              <svg className="w-5 h-5 stroke-[#6367FF]" viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/>
-              </svg>
-            </div>
-            <div>
-              <span className="text-[10px] font-black uppercase text-[#8494FF] block tracking-wider">Streak Freeze</span>
-              <span className="text-xs font-black text-[#1E1B38]">
-                {streakFreezes?.available > 0 
-                  ? (lang === 'id' ? '1x Pelindung Siap Pakai' : '1 Freeze Day Ready') 
-                  : (lang === 'id' ? 'Sudah Terpakai Bulan Ini' : 'Used This Month')}
-              </span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleUseStreakFreeze}
-            disabled={streakFreezes?.available <= 0}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all shadow-xs ${
-              streakFreezes?.available > 0
-                ? 'bg-[#6367FF] text-white hover:bg-[#4F53EB] active:scale-95'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {streakFreezes?.available > 0 
-              ? (lang === 'id' ? 'Bekukan' : 'Freeze')
-              : (lang === 'id' ? 'Terkunci' : 'Locked')}
-          </button>
-        </div>
-
-        {/* KARTU PREVIEW TROFI & PENCAPAIAN (SHOWCASE WIDGET DI DASHBOARD) */}
+        {/* KARTU PREVIEW TROFI (HANYA USER TERDAFTAR, MODE TAMU BLUR BERSIH) */}
         {(() => {
           const unlockedBadges = BADGE_DEFINITIONS.filter(b => {
             try { return b.checkUnlocked(userStats); } catch(e) { return false; }
@@ -1366,11 +1316,37 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
           const lockedBadges = BADGE_DEFINITIONS.filter(b => {
             try { return !b.checkUnlocked(userStats); } catch(e) { return true; }
           });
-          // Cari target badge berikutnya (utamakan kategori streak, lalu finansial)
           const nextTargetBadge = lockedBadges.find(b => b.category === 'streak') || lockedBadges[0] || null;
 
           return (
-            <div className="p-5 bg-white border border-[#DDD5FF] rounded-3xl shadow-sm text-left space-y-3.5 relative overflow-hidden">
+            <div 
+              onClick={() => {
+                if (!isRegistered) {
+                  requireRegistration(lang === 'id' ? 'melihat Trofi' : 'view Trophies');
+                } else {
+                  setActiveSheet('badges');
+                }
+              }}
+              className="p-5 bg-white border border-[#DDD5FF] rounded-3xl shadow-sm text-left space-y-3.5 relative overflow-hidden cursor-pointer hover:border-[#6367FF] transition-all"
+            >
+              {/* Overlay Kunci Khusus Mode Tamu (Blur Bersih Tanpa Tombol) */}
+              {!isRegistered && (
+                <div className="absolute inset-0 bg-[#FAF8FF]/80 backdrop-blur-md z-10 flex flex-col items-center justify-center p-4 text-center">
+                  <div className="w-9 h-9 rounded-2xl bg-white border border-[#DDD5FF] text-[#6367FF] flex items-center justify-center mb-1.5 shadow-sm">
+                    <svg className="w-4 h-4 stroke-[#6367FF]" fill="none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="8" r="7" />
+                      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-black text-[#1E1B38]">
+                    {lang === 'id' ? 'Trofi Terkunci' : 'Trophies Locked'}
+                  </span>
+                  <span className="text-[10px] text-[#6D6796] mt-0.5">
+                    {lang === 'id' ? 'Ketuk untuk mendaftar akun' : 'Tap to register an account'}
+                  </span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-2xl bg-[#FAF8FF] border border-[#DDD5FF] flex items-center justify-center text-[#6367FF]">
@@ -1381,7 +1357,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   </div>
                   <div>
                     <h4 className="font-extrabold text-sm text-[#1E1B38]">
-                      {lang === 'id' ? 'Trofi & Kedaulatan' : 'Trophy & Mastery'}
+                      {lang === 'id' ? 'Trofi' : 'Trophies'}
                     </h4>
                     <span className="text-[10px] font-bold text-[#8494FF]">
                       {unlockedBadges.length} / {BADGE_DEFINITIONS.length} {lang === 'id' ? 'Trofi Didapat' : 'Earned'}
@@ -1389,17 +1365,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    setActiveSheet('badges');
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-[#FAF8FF] border border-[#DDD5FF] text-[#6367FF] font-extrabold text-xs flex items-center gap-1 hover:bg-[#ECE9FF] transition-colors active:scale-95"
-                >
-                  <span>{lang === 'id' ? 'Lihat Semua' : 'View All'}</span>
-                  <svg className="w-3.5 h-3.5 stroke-[#6367FF]" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
+                <svg className="w-4 h-4 stroke-[#6D6796]" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </div>
 
               {/* Next Target Milestone Box */}
@@ -1431,10 +1399,10 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 </div>
               )}
 
-              {/* Sneak Peek 4 Trofi Didapat */}
-              <div className="flex items-center justify-between pt-1">
+              {/* Sneak Peek Trofi Didapat */}
+              <div className="flex items-center justify-between pt-0.5">
                 <div className="flex -space-x-1.5 overflow-hidden">
-                  {unlockedBadges.slice(0, 4).map(badge => (
+                  {unlockedBadges.slice(0, 5).map(badge => (
                     <div 
                       key={badge.id}
                       title={badge.nameId}
@@ -1445,19 +1413,16 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                       </svg>
                     </div>
                   ))}
-                  {unlockedBadges.length > 4 && (
+                  {unlockedBadges.length > 5 && (
                     <div className="w-7 h-7 rounded-xl bg-[#6367FF] border border-[#DDD5FF] flex items-center justify-center text-white text-[9px] font-black shadow-xs">
-                      +{unlockedBadges.length - 4}
+                      +{unlockedBadges.length - 5}
                     </div>
                   )}
                 </div>
 
-                <button
-                  onClick={() => setActiveSheet('badges')}
-                  className="text-[11px] font-extrabold text-[#6367FF] hover:underline"
-                >
-                  {lang === 'id' ? 'Buka Galeri Penuh ➔' : 'Open Full Hall ➔'}
-                </button>
+                <span className="text-[11px] font-bold text-[#8494FF]">
+                  {lang === 'id' ? 'Ketuk untuk rincian' : 'Tap for details'}
+                </span>
               </div>
             </div>
           );
@@ -1593,7 +1558,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 {activeSheet === 'manageHabits' && (lang === 'id' ? 'Kelola & Tambah Program Habit' : 'Manage & Add Habits')}
                 {activeSheet === 'community' && (lang === 'id' ? 'Ruang Komunitas Pejuang' : 'Warriors Community')}
                 {activeSheet === 'profile' && (lang === 'id' ? 'Profil Pejuang' : 'Warrior Profile')}
-                {activeSheet === 'badges' && (lang === 'id' ? 'Galeri Trofi & Kedaulatan' : 'Hall of Badges & Mastery')}
+                {activeSheet === 'badges' && (lang === 'id' ? 'Trofi' : 'Trophies')}
                 {activeSheet === 'editProfile' && (lang === 'id' ? 'Edit Profil' : 'Edit Profile')}
                 {activeSheet === 'editGoal' && (lang === 'id' ? 'Target Barang Impian' : 'Dream Goal Reward')}
                 {activeSheet === 'authModal' && (authMode === 'register' ? (lang === 'id' ? 'Daftar Akun Pejuang' : 'Create Warrior Account') : (lang === 'id' ? 'Masuk Akun' : 'Log In'))}
@@ -2108,7 +2073,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
               </div>
             )}
 
-            {/* HALAMAN DEDIKASI: GALERI TROFI & KEDAULATAN (HALL OF FAME) */}
+            {/* HALAMAN DEDIKASI: TROFI (HALL OF FAME) */}
             {activeSheet === 'badges' && (() => {
               const unlockedCount = BADGE_DEFINITIONS.filter(b => {
                 try { return b.checkUnlocked(userStats); } catch(e) { return false; }
@@ -2356,27 +2321,22 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                    {lang === 'id' ? 'Nama Panggilan' : 'Display Name'}
-                  </label>
-                  <input 
-                    type="text" 
-                    value={editName}
-                    onChange={e => setEditName(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-[#C9BEFF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                    {lang === 'id' ? 'Username Komunitas (@handle)' : 'Community Username (@handle)'}
-                  </label>
-                  <input 
-                    type="text" 
-                    value={editUsername}
-                    onChange={e => setEditUsername(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-[#C9BEFF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
-                  />
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-bold text-[#1E1B38]">
+                      {lang === 'id' ? 'Username Komunitas (@handle)' : 'Community Username (@handle)'}
+                    </label>
+                    <span className="text-[10px] font-bold text-[#8494FF]">Maks. 8 Karakter</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-3.5 font-bold text-[#6D6796]">@</span>
+                    <input 
+                      type="text" 
+                      maxLength={8}
+                      value={editUsername}
+                      onChange={e => setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8))}
+                      className="w-full p-3.5 pl-8 rounded-xl border border-[#DDD5FF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -2538,34 +2498,26 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 </div>
 
                 {authMode === 'register' && (
-                  <>
-                    <div>
-                      <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                        {lang === 'id' ? 'Nama Panggilan' : 'Display Name'}
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        value={authName}
-                        onChange={e => setAuthName(e.target.value)}
-                        placeholder="Contoh: Rocky"
-                        className="w-full p-3 rounded-xl border border-[#C9BEFF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-[#1E1B38] block mb-1">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-bold text-[#1E1B38]">
                         {lang === 'id' ? 'Username Komunitas (@handle)' : 'Username (@handle)'}
                       </label>
+                      <span className="text-[10px] font-bold text-[#8494FF]">Maks. 8 Karakter</span>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-3.5 font-bold text-[#6D6796]">@</span>
                       <input 
                         type="text" 
                         required
+                        maxLength={8}
                         value={authUsername}
-                        onChange={e => setAuthUsername(e.target.value)}
-                        placeholder="rocky_warrior"
-                        className="w-full p-3 rounded-xl border border-[#C9BEFF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
+                        onChange={e => setAuthUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8))}
+                        placeholder="rocky"
+                        className="w-full p-3.5 pl-8 rounded-xl border border-[#DDD5FF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
                       />
                     </div>
-                  </>
+                  </div>
                 )}
 
                 <div>
@@ -4123,7 +4075,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
                   <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                 </svg>
-                <span>{lang === 'id' ? 'Bagikan ke Media Sosial / Chat' : 'Share to Social / Apps'}</span>
+                <span>Share</span>
               </button>
 
               <button

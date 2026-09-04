@@ -83,10 +83,10 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
   }
 
   function finish() {
-    const finalName = userName.trim() || 'Rocky';
     const finalTag = usernameTag.trim() 
-      ? usernameTag.trim().toLowerCase().replace(/[^a-z0-9_]/g, '') 
-      : finalName.toLowerCase().replace(/\s+/g, '_') + '_warrior';
+      ? usernameTag.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8) 
+      : 'pejuang';
+    const finalName = finalTag;
 
     // Jika user kosongkan barang impian, pilihkan barang random lucu/keren
     let goalObj;
@@ -715,7 +715,7 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
         </div>
       )}
 
-      {/* STEP 3: NAMA, USERNAME UNTUK KOMUNITAS & TANGGAL BERHENTI */}
+      {/* STEP 3: USERNAME UNTUK KOMUNITAS & TANGGAL BERHENTI */}
       {step === 'step3' && (
         <div className="my-auto">
           <h2 className="text-2xl font-extrabold text-[#1E1B38] mb-2">
@@ -723,35 +723,26 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
           </h2>
           <p className="text-xs text-[#6D6796] mb-6">
             {lang === 'id' 
-              ? 'Nama dan @username digunakan untuk saling sapa dan berbagi di Komunitas.' 
-              : 'Name & @username will be used to interact in the Community.'}
+              ? 'Username @handle digunakan untuk saling sapa dan berbagi di Komunitas.' 
+              : '@handle username will be used to interact in the Community.'}
           </p>
 
           <div className="bg-white border border-[#C9BEFF] rounded-3xl p-5 mb-6 space-y-4">
             <div>
-              <label className="text-xs font-bold text-[#1E1B38] block mb-1.5">
-                {lang === 'id' ? 'Nama Panggilan' : 'Your Nickname'}
-              </label>
-              <input
-                type="text"
-                placeholder={lang === 'id' ? 'Contoh: Rocky' : 'e.g. Rocky'}
-                value={userName}
-                onChange={e => setUserName(e.target.value)}
-                className="w-full p-3.5 rounded-xl border border-[#C9BEFF] bg-[#FAF8FF] text-[#1E1B38] font-bold text-base outline-none focus:border-[#6367FF]"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-[#1E1B38] block mb-1.5">
-                {lang === 'id' ? 'Username Komunitas (bisa di-tag @user)' : 'Community Username (@handle)'}
-              </label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="text-xs font-bold text-[#1E1B38]">
+                  {lang === 'id' ? 'Username Komunitas' : 'Community Username'}
+                </label>
+                <span className="text-[10px] font-bold text-[#8494FF]">Maks. 8 Karakter</span>
+              </div>
               <div className="relative">
                 <span className="absolute left-3.5 top-3.5 font-bold text-[#6D6796]">@</span>
                 <input
                   type="text"
-                  placeholder="rocky_warrior"
+                  maxLength={8}
+                  placeholder="rocky"
                   value={usernameTag}
-                  onChange={e => setUsernameTag(e.target.value)}
+                  onChange={e => setUsernameTag(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8))}
                   className="w-full p-3.5 pl-8 rounded-xl border border-[#C9BEFF] bg-[#FAF8FF] text-[#1E1B38] font-bold text-base outline-none focus:border-[#6367FF]"
                 />
               </div>
