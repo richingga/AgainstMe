@@ -3575,34 +3575,6 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   </button>
                 </div>
 
-                {/* Pasang Aplikasi ke Layar Utama HP (Clean Minimalist - Tanpa Logo Download) */}
-                <div className="bg-white border border-[#DDD5FF] rounded-2xl p-4 flex justify-between items-center shadow-sm">
-                  <div className="space-y-0.5">
-                    <div className="text-sm font-bold text-[#1E1B38]">
-                      {isAppInstalled 
-                        ? (lang === 'id' ? 'Aplikasi Terpasang di HP' : 'App Installed on Phone')
-                        : (lang === 'id' ? 'Pasang Aplikasi ke HP' : 'Install App to Phone')}
-                    </div>
-                    <div className="text-xs text-[#6D6796]">
-                      {isAppInstalled
-                        ? (lang === 'id' ? 'Berjalan mandiri tanpa browser' : 'Running in standalone mode')
-                        : (lang === 'id' ? 'Akses instan di layar utama & offline' : 'Home screen icon & offline ready')}
-                    </div>
-                  </div>
-                  {!isAppInstalled ? (
-                    <button
-                      onClick={handleInstallPwa}
-                      className="px-4 py-2 rounded-xl bg-[#6367FF] text-white font-extrabold text-xs hover:bg-[#4F53EB] active:scale-95 transition-all shadow-sm whitespace-nowrap"
-                    >
-                      {lang === 'id' ? 'Pasang' : 'Install'}
-                    </button>
-                  ) : (
-                    <span className="px-3 py-1 rounded-full bg-[#ECE9FF] text-[#6367FF] font-bold text-[11px]">
-                      {lang === 'id' ? 'Aktif' : 'Active'}
-                    </span>
-                  )}
-                </div>
-
                 {/* Cadangan & Pulihkan Data JSON (Data Sovereignty) */}
                 <div className="bg-white border border-[#DDD5FF] rounded-2xl p-4 space-y-3 shadow-sm">
                   <div>
