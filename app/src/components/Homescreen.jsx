@@ -1091,37 +1091,39 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
             <div 
               onClick={() => {
                 setGoalNameInput(activeGoal.name || '');
-                setGoalTargetInput(formatNumberInput(activeGoal.target || 14000000));
+                setGoalTargetInput(formatNumberInput(activeGoal.target || 15000000));
                 setActiveSheet('editGoal');
               }}
-              className="bg-[#FAF8FF] border border-[#C9BEFF] rounded-2xl p-3.5 mb-3 cursor-pointer hover:border-[#8494FF] transition-colors"
+              className="bg-[#FAF8FF] border border-[#DDD5FF] rounded-2xl p-3.5 mb-3 cursor-pointer hover:border-[#6367FF] transition-colors text-left"
             >
-              <div className="flex justify-between items-center text-xs mb-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-[#ECE9FF] flex items-center justify-center text-[#6367FF]">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="w-6 h-6 rounded-lg bg-[#ECE9FF] flex items-center justify-center text-[#6367FF] flex-shrink-0">
                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10" />
                       <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
+                      <circle cx="12" cy="2" r="2" />
                     </svg>
                   </div>
-                  <span className="font-extrabold text-[#1E1B38]">
+                  <span className="font-extrabold text-xs text-[#1E1B38] truncate">
                     {lang === 'id' ? (activeGoal.name || 'Target Alokasi') : (activeGoal.nameEn || activeGoal.name)}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold text-[#6367FF] bg-[#ECE9FF] px-2 py-0.5 rounded-full">
-                  {goalProgressPct}% ({formatCurrency(activeGoal.target, lang)})
+                <span className="text-[10px] font-extrabold text-[#6367FF] bg-[#ECE9FF] px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
+                  {goalProgressPct}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-[#C9BEFF]/40 rounded-full overflow-hidden">
+
+              <div className="w-full h-2 bg-[#DDD5FF]/60 rounded-full overflow-hidden mb-2">
                 <div 
                   className="h-full bg-[#6367FF] rounded-full transition-all duration-500" 
                   style={{ width: `${goalProgressPct}%` }}
                 />
               </div>
-              <div className="text-[10px] text-[#6D6796] mt-1.5 flex justify-between">
-                <span>{lang === 'id' ? 'Klik untuk atur target alokasi' : 'Tap to customize target'}</span>
-                <span className="font-bold text-[#1E1B38]">{formatCurrency(totalMoneySavedRaw, lang)}</span>
+
+              <div className="text-[10px] text-[#6D6796] flex justify-between items-center">
+                <span>{lang === 'id' ? 'Target:' : 'Target:'} <strong className="text-[#1E1B38] font-bold">{formatCurrency(activeGoal.target, lang)}</strong></span>
+                <span className="font-bold text-[#6367FF]">{formatCurrency(totalMoneySavedRaw, lang)}</span>
               </div>
             </div>
 
@@ -1166,37 +1168,39 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
             <div 
               onClick={() => {
                 setGoalNameInput(activeGoal.name || '');
-                setGoalTargetInput(formatNumberInput(activeGoal.target || 14000000));
+                setGoalTargetInput(formatNumberInput(activeGoal.target || 20000000));
                 setActiveSheet('editGoal');
               }}
-              className="bg-[#FAF8FF] border border-[#DDD5FF] rounded-2xl p-3.5 cursor-pointer hover:border-[#8494FF] transition-colors"
+              className="bg-[#FAF8FF] border border-[#DDD5FF] rounded-2xl p-3.5 cursor-pointer hover:border-[#6367FF] transition-colors text-left"
             >
-              <div className="flex justify-between items-center text-xs mb-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-[#ECE9FF] flex items-center justify-center text-[#6367FF]">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="w-6 h-6 rounded-lg bg-[#ECE9FF] flex items-center justify-center text-[#6367FF] flex-shrink-0">
                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10" />
                       <circle cx="12" cy="12" r="6" />
-                      <circle cx="12" cy="12" r="2" />
+                      <circle cx="12" cy="2" r="2" />
                     </svg>
                   </div>
-                  <span className="font-extrabold text-[#1E1B38]">
+                  <span className="font-extrabold text-xs text-[#1E1B38] truncate">
                     {lang === 'id' ? (activeGoal.name || 'Target Alokasi') : (activeGoal.nameEn || activeGoal.name)}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold text-[#6367FF] bg-[#ECE9FF] px-2 py-0.5 rounded-full">
-                  {goalProgressPct}% ({formatCurrency(activeGoal.target, lang)})
+                <span className="text-[10px] font-extrabold text-[#6367FF] bg-[#ECE9FF] px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
+                  {goalProgressPct}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-[#C9BEFF]/40 rounded-full overflow-hidden">
+
+              <div className="w-full h-2 bg-[#DDD5FF]/60 rounded-full overflow-hidden mb-2">
                 <div 
                   className="h-full bg-[#6367FF] rounded-full transition-all duration-500" 
                   style={{ width: `${goalProgressPct}%` }}
                 />
               </div>
-              <div className="text-[10px] text-[#6D6796] mt-1.5 flex justify-between">
-                <span>{lang === 'id' ? 'Klik untuk atur target alokasi' : 'Tap to customize target'}</span>
-                <span className="font-bold text-[#1E1B38]">{formatCurrency(totalMoneySavedRaw, lang)}</span>
+
+              <div className="text-[10px] text-[#6D6796] flex justify-between items-center">
+                <span>{lang === 'id' ? 'Target:' : 'Target:'} <strong className="text-[#1E1B38] font-bold">{formatCurrency(activeGoal.target, lang)}</strong></span>
+                <span className="font-bold text-[#6367FF]">{formatCurrency(totalMoneySavedRaw, lang)}</span>
               </div>
             </div>
           </div>
@@ -1398,52 +1402,26 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   </div>
                 </div>
               )}
-
-              {/* Sneak Peek Trofi Didapat */}
-              <div className="flex items-center justify-between pt-0.5">
-                <div className="flex -space-x-1.5 overflow-hidden">
-                  {unlockedBadges.slice(0, 5).map(badge => (
-                    <div 
-                      key={badge.id}
-                      title={badge.nameId}
-                      className="w-7 h-7 rounded-xl bg-[#FAF8FF] border border-[#DDD5FF] flex items-center justify-center text-[#6367FF] shadow-xs"
-                    >
-                      <svg className="w-3.5 h-3.5 stroke-[#6367FF]" fill="none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                      </svg>
-                    </div>
-                  ))}
-                  {unlockedBadges.length > 5 && (
-                    <div className="w-7 h-7 rounded-xl bg-[#6367FF] border border-[#DDD5FF] flex items-center justify-center text-white text-[9px] font-black shadow-xs">
-                      +{unlockedBadges.length - 5}
-                    </div>
-                  )}
-                </div>
-
-                <span className="text-[11px] font-bold text-[#8494FF]">
-                  {lang === 'id' ? 'Ketuk untuk rincian' : 'Tap for details'}
-                </span>
-              </div>
             </div>
           );
         })()}
 
         {/* DAILY CHECK-IN CARD (1 HARI = 1 PILIHAN, BISA DIGANTI, HARI BARU RESET NORMAL) */}
         <div className="bg-white border border-[#DDD5FF] rounded-3xl p-5 shadow-sm text-left">
-          <div className="flex justify-between items-center mb-1">
-            <div className="font-extrabold text-sm text-[#1E1B38]">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="font-extrabold text-sm text-[#1E1B38] min-w-0">
               {lang === 'id' ? 'Gimana kondisimu sekarang?' : 'How are you feeling right now?'}
             </div>
             {(() => {
               const todayStr = new Date().toISOString().split('T')[0];
               const todayCheckin = (checkins || []).find(c => (c.timestamp || '').split('T')[0] === todayStr);
               return todayCheckin ? (
-                <span className="text-[10px] font-extrabold text-[#6367FF] bg-[#ECE9FF] px-2.5 py-0.5 rounded-full border border-[#6367FF]/20 flex items-center gap-1">
+                <span className="text-[10px] font-extrabold text-[#6367FF] bg-[#ECE9FF] px-2.5 py-0.5 rounded-full border border-[#6367FF]/20 flex items-center gap-1 whitespace-nowrap flex-shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#6367FF] inline-block"></span>
                   {todayCheckin.moodLabel}
                 </span>
               ) : (
-                <span className="text-[10px] font-bold text-[#6D6796] bg-white px-2 py-0.5 rounded-full border border-[#C9BEFF]">
+                <span className="text-[10px] font-bold text-[#6D6796] bg-white px-2 py-0.5 rounded-full border border-[#C9BEFF] whitespace-nowrap flex-shrink-0">
                   {lang === 'id' ? 'Belum check-in' : 'Not yet'}
                 </span>
               );
@@ -3357,102 +3335,117 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
               </div>
             )}
 
-            {/* MANAGE / ADD HABITS SHEET */}
+            {/* MANAGE / ADD HABITS SHEET (CLEAN, ELEGAN & TERSTRUKTUR) */}
             {activeSheet === 'manageHabits' && (
               <div className="space-y-4">
-                <div className="bg-[#ECE9FF] border border-[#8494FF]/20 rounded-2xl p-4 text-xs text-[#1E1B38] leading-relaxed">
-                  <span className="font-extrabold text-[#6367FF] block mb-1">
-                    {lang === 'id' ? 'Kustomisasi Program Pemulihanmu' : 'Customize Your Recovery Programs'}
-                  </span>
-                  {lang === 'id' 
-                    ? 'Kamu bisa menambah atau menonaktifkan pemantauan adiksi kapan saja. Streak setiap kebiasaan dihitung mandiri sejak tanggal mulai masing-masing.' 
-                    : 'You can add or toggle habit tracking anytime. Each habit maintains its own independent streak timer.'}
+                <div className="bg-white border border-[#DDD5FF] rounded-2xl p-4 text-xs text-[#1E1B38] leading-relaxed shadow-sm">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-[#6367FF]"></span>
+                    <span className="font-extrabold text-[#6367FF] text-xs">
+                      {lang === 'id' ? 'Kustomisasi Program Pemulihan' : 'Customize Recovery Programs'}
+                    </span>
+                  </div>
+                  <p className="text-[#6D6796] text-[11px] leading-relaxed">
+                    {lang === 'id' 
+                      ? 'Kamu bisa menambah atau menonaktifkan pemantauan kebiasaan kapan saja. Timer streak setiap habit berjalan mandiri.' 
+                      : 'You can toggle habits anytime. Each habit runs on its own independent streak timer.'}
+                  </p>
                 </div>
 
                 <div className="space-y-3">
                   {[
                     {
                       id: 'narcotics',
-                      name: 'Rehab (Narkotika & Zat Adiktif)',
-                      desc: lang === 'id' ? 'Pemulihan dari zat adiktif, penanganan sakau, hemat jutaan rupiah dari dosis & pulihkan hidup.' : 'Overcome chemical dependency, somatic craving relief & save millions on doses.',
-                      badge: lang === 'id' ? 'Kritis & Finansial' : 'Critical & Savings'
+                      name: 'Rehab (Narkotika & Zat)',
+                      desc: lang === 'id' ? 'Pemulihan zat adiktif, penanganan sakau & hemat jutaan rupiah dari dosis.' : 'Overcome chemical dependency, craving relief & save on doses.',
+                      badge: lang === 'id' ? 'Kritis' : 'Critical'
                     },
                     {
                       id: 'gambling',
                       name: lang === 'id' ? 'Judi Online & Slot' : 'Gambling & Slots',
-                      desc: lang === 'id' ? 'Catat celengan penyelamat godaan, hentikan impuls deposit.' : 'Track urge piggybank and block impulse deposits.',
-                      badge: lang === 'id' ? 'Finansial & Mental' : 'Financial & Mental'
+                      desc: lang === 'id' ? 'Hentikan impuls deposit dan catat celengan penyelamat godaan.' : 'Block impulse deposits and track urge savings.',
+                      badge: lang === 'id' ? 'Finansial' : 'Financial'
                     },
                     {
                       id: 'pmo',
-                      name: 'PMO (Porn, Masturbation, Orgasm)',
-                      desc: lang === 'id' ? 'Kedaulatan otak dan dopamin lewat 6 tingkatan rank ksatria.' : 'Reclaim dopamine sovereignty across 6 mastery ranks.',
-                      badge: lang === 'id' ? 'Dopamin Reset' : 'Dopamine Reset'
+                      name: 'PMO (Porn & Masturbation)',
+                      desc: lang === 'id' ? 'Reset dopamin alami dan pulihkan fokus mental lewat 6 rank ksatria.' : 'Natural dopamine reset and mental focus across 6 mastery ranks.',
+                      badge: lang === 'id' ? 'Dopamin' : 'Dopamine'
                     },
                     {
                       id: 'tobacco',
                       name: lang === 'id' ? 'Rokok & Vaping' : 'Smoking & Vaping',
-                      desc: lang === 'id' ? 'Bersihkan paru-paru dan tabung uang rokok ke barang impian.' : 'Cleanse lungs and convert cigarette money into dream goals.',
-                      badge: lang === 'id' ? 'Kesehatan & Uang' : 'Health & Savings'
+                      desc: lang === 'id' ? 'Bersihkan paru-paru dan tabung uang rokok ke target impian.' : 'Cleanse lungs and convert cigarette expenses into dream goals.',
+                      badge: lang === 'id' ? 'Kesehatan' : 'Health'
                     },
                     {
                       id: 'alcohol',
                       name: lang === 'id' ? 'Alkohol & Minuman Keras' : 'Alcohol & Drinking',
-                      desc: lang === 'id' ? 'Kesehatan organ hati, kejernihan pikiran, dan hemat jutaan rupiah.' : 'Liver recovery, mental clarity, and massive financial savings.',
-                      badge: lang === 'id' ? 'Kesehatan Organ' : 'Organ Health'
+                      desc: lang === 'id' ? 'Pemulihan organ hati, kejernihan pikiran, dan hemat jutaan rupiah.' : 'Liver recovery, mental clarity, and massive financial savings.',
+                      badge: lang === 'id' ? 'Organ' : 'Health'
                     }
                   ].map(h => {
                     const isCurrentlyActive = !!habits[h.id]?.active;
                     return (
                       <div 
                         key={h.id}
-                        className={`p-4 rounded-2xl border-2 transition-all flex justify-between items-center gap-3 ${
+                        className={`p-4 rounded-2xl border transition-all text-left space-y-2.5 ${
                           isCurrentlyActive 
-                            ? 'bg-white border-[#6367FF] shadow-sm shadow-[#6367FF]/10' 
-                            : 'bg-[#FAF8FF] border-[#DDD5FF] opacity-80'
+                            ? 'bg-white border-[#6367FF]/50 shadow-sm' 
+                            : 'bg-[#FAF8FF] border-[#DDD5FF]'
                         }`}
                       >
-                        <div className="space-y-1 text-left flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-sm text-[#1E1B38]">{h.name}</span>
-                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#ECE9FF] text-[#6367FF] border border-[#6367FF]/20">
-                              {h.badge}
-                            </span>
-                          </div>
-                          <p className="text-xs text-[#6D6796] leading-snug">{h.desc}</p>
-                          {isCurrentlyActive && (
-                            <div className="text-[10px] font-bold text-[#6367FF] pt-0.5">
-                              {lang === 'id' ? '✓ Sedang aktif dipantau' : '✓ Currently tracked'}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-extrabold text-sm text-[#1E1B38]">{h.name}</span>
+                              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-[#ECE9FF] text-[#6367FF] border border-[#6367FF]/20">
+                                {h.badge}
+                              </span>
                             </div>
-                          )}
+                            <p className="text-[11px] text-[#6D6796] mt-1 leading-snug">{h.desc}</p>
+                          </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isCurrentlyActive) {
-                              // Trigger Konfirmasi Hapus dengan Warning Jelas
-                              if (activeHabitKeys.length <= 1) {
-                                showToast(lang === 'id' ? 'Minimal harus ada 1 habit yang aktif dipantau!' : 'At least 1 habit must remain active!');
-                                return;
+                        <div className="flex items-center justify-between pt-2 border-t border-[#DDD5FF]/60">
+                          <div className="text-[10px] font-bold">
+                            {isCurrentlyActive ? (
+                              <span className="text-[#6367FF] flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#6367FF]"></span>
+                                {lang === 'id' ? 'Aktif Dipantau' : 'Active'}
+                              </span>
+                            ) : (
+                              <span className="text-[#6D6796]">
+                                {lang === 'id' ? 'Belum Aktif' : 'Inactive'}
+                              </span>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isCurrentlyActive) {
+                                if (activeHabitKeys.length <= 1) {
+                                  showToast(lang === 'id' ? 'Minimal harus ada 1 habit yang aktif dipantau!' : 'At least 1 habit must remain active!');
+                                  return;
+                                }
+                                setHabitToDelete(h);
+                              } else {
+                                setHabitToConfigure(h);
+                                setNewHabitStartDate(new Date().toISOString().split('T')[0]);
                               }
-                              setHabitToDelete(h);
-                            } else {
-                              // Buka popup konfigurasi kalkulasi habit baru
-                              setHabitToConfigure(h);
-                              setNewHabitStartDate(new Date().toISOString().split('T')[0]);
-                            }
-                          }}
-                          className={`px-4 py-2 rounded-xl text-xs font-black transition-all active:scale-95 whitespace-nowrap shadow-sm ${
-                            isCurrentlyActive
-                              ? 'bg-[#FAF8FF] border border-[#DDD5FF] text-[#6D6796] hover:bg-red-50 hover:text-red-500 hover:border-red-200'
-                              : 'bg-[#6367FF] hover:bg-[#4F53EB] text-white shadow-md shadow-[#6367FF]/30'
-                          }`}
-                        >
-                          {isCurrentlyActive 
-                            ? (lang === 'id' ? 'Nonaktifkan / Hapus' : 'Remove') 
-                            : (lang === 'id' ? '+ Tambah' : '+ Add')}
-                        </button>
+                            }}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all active:scale-95 shadow-sm ${
+                              isCurrentlyActive
+                                ? 'bg-[#FAF8FF] border border-[#DDD5FF] text-[#6D6796] hover:bg-red-50 hover:text-red-500 hover:border-red-200'
+                                : 'bg-[#6367FF] hover:bg-[#4F53EB] text-white shadow-[#6367FF]/20'
+                            }`}
+                          >
+                            {isCurrentlyActive 
+                              ? (lang === 'id' ? 'Nonaktifkan' : 'Remove') 
+                              : (lang === 'id' ? '+ Tambah' : '+ Add')}
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -3477,8 +3470,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                     onClick={() => setActiveSheet('manageHabits')}
                     className="px-3 py-1.5 rounded-xl bg-[#6367FF] text-white font-black text-xs hover:bg-[#4F53EB] active:scale-95 transition-all shadow-md shadow-[#6367FF]/20 flex items-center gap-1"
                   >
-                    <span>+</span>
-                    <span>{lang === 'id' ? 'Kelola Habit' : 'Manage'}</span>
+                    <span>{lang === 'id' ? 'Kelola' : 'Manage'}</span>
                   </button>
                 </div>
 
@@ -3515,7 +3507,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                         <polyline points="7 10 12 15 17 10"/>
                         <line x1="12" y1="15" x2="12" y2="3"/>
                       </svg>
-                      <span>{lang === 'id' ? 'Cadangkan Data' : 'Export Backup'}</span>
+                      <span>{lang === 'id' ? 'Cadangkan' : 'Export'}</span>
                     </button>
 
                     <button
@@ -4334,16 +4326,16 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
       {habitToConfigure && (
         <div 
           onClick={() => setHabitToConfigure(null)}
-          className="fixed inset-0 bg-[#1E1B38]/60 backdrop-blur-sm z-50 flex items-center justify-center p-5 animate-fadeIn"
+          className="fixed inset-0 bg-[#1E1B38]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
         >
           <div 
             onClick={e => e.stopPropagation()}
-            className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border-2 border-[#C9BEFF] text-left space-y-4 max-h-[85vh] overflow-y-auto animate-scaleUp"
+            className="w-full max-w-sm bg-white rounded-3xl p-5 shadow-2xl border border-[#C9BEFF] text-left space-y-4 max-h-[85vh] overflow-y-auto animate-scaleUp"
           >
-            <div className="flex justify-between items-center pb-2 border-b border-[#DDD5FF]">
+            <div className="flex justify-between items-center pb-3 border-b border-[#DDD5FF]">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-[#6367FF] block">
-                  {lang === 'id' ? 'Setup Program Baru' : 'New Program Setup'}
+                  {lang === 'id' ? 'Tambah Program Baru' : 'New Program Setup'}
                 </span>
                 <h4 className="text-sm font-black text-[#1E1B38]">
                   {habitToConfigure.name}
@@ -4351,7 +4343,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
               </div>
               <button 
                 onClick={() => setHabitToConfigure(null)}
-                className="w-7 h-7 rounded-full bg-[#FAF8FF] border border-[#DDD5FF] text-xs font-bold text-[#6D6796] flex items-center justify-center"
+                className="w-7 h-7 rounded-full bg-[#FAF8FF] border border-[#DDD5FF] text-xs font-bold text-[#6D6796] flex items-center justify-center hover:bg-[#ECE9FF]"
               >
                 ✕
               </button>
@@ -4360,25 +4352,25 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
             {/* Tanggal Mulai Berhenti */}
             <div>
               <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                {lang === 'id' ? 'Mulai berhenti sejak kapan?' : 'Quit date & time'}
+                {lang === 'id' ? 'Mulai berhenti sejak kapan?' : 'Quit date'}
               </label>
               <input
                 type="date"
                 value={newHabitStartDate}
                 onChange={e => setNewHabitStartDate(e.target.value)}
-                className="w-full p-3 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
+                className="w-full p-2.5 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
               />
-              <span className="text-[10px] text-[#6D6796] mt-0.5 block">
+              <span className="text-[10px] text-[#6D6796] mt-1 block">
                 {lang === 'id' ? 'Bisa pilih hari ini atau tanggal lampau jika sudah mulai duluan.' : 'Pick today or past date if already started.'}
               </span>
             </div>
 
             {/* FORM KHUSUS ROKOK (BATANG & HARGA) */}
             {habitToConfigure.id === 'tobacco' && (
-              <div className="space-y-3 pt-2 border-t border-[#DDD5FF]">
+              <div className="space-y-3 pt-3 border-t border-[#DDD5FF]">
                 <div>
                   <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                    {lang === 'id' ? 'Berapa batang rokok sehari biasanya?' : 'Cigarettes smoked per day?'}
+                    {lang === 'id' ? 'Berapa batang rokok sehari biasanya?' : 'Cigarettes per day?'}
                   </label>
                   <input
                     type="text"
@@ -4388,12 +4380,12 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       setNewHabitCigsPerDay(val === '' ? '' : Number(val));
                     }}
-                    className="w-full p-3 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
+                    className="w-full p-2.5 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                    {lang === 'id' ? 'Isi rokok per bungkus berapa batang?' : 'Cigarettes per pack?'}
+                    {lang === 'id' ? 'Isi rokok per bungkus?' : 'Cigarettes per pack?'}
                   </label>
                   <input
                     type="text"
@@ -4403,12 +4395,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       setNewHabitCigsPerPack(val === '' ? '' : Number(val));
                     }}
-                    className="w-full p-3 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
+                    className="w-full p-2.5 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
                     placeholder="20"
                   />
-                  <span className="text-[10px] text-[#6D6796] mt-0.5 block">
-                    {lang === 'id' ? 'Contoh: 12, 16, atau 20 batang per bungkus' : 'e.g. 12, 16, or 20 per pack'}
-                  </span>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#1E1B38] block mb-1">
@@ -4418,7 +4407,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                     type="text"
                     value={newHabitPackPrice}
                     onChange={e => setNewHabitPackPrice(formatNumberInput(parseNumberInput(e.target.value)))}
-                    className="w-full p-3 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
+                    className="w-full p-2.5 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
                     placeholder="35.000"
                   />
                 </div>
@@ -4427,7 +4416,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
             {/* FORM KHUSUS ALKOHOL */}
             {habitToConfigure.id === 'alcohol' && (
-              <div className="space-y-3 pt-2 border-t border-[#DDD5FF]">
+              <div className="space-y-3 pt-3 border-t border-[#DDD5FF]">
                 <div>
                   <label className="text-xs font-bold text-[#1E1B38] block mb-1">
                     {lang === 'id' ? 'Berapa kali minum dalam seminggu?' : 'Drinking sessions per week?'}
@@ -4440,30 +4429,30 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                       const val = e.target.value.replace(/[^0-9]/g, '');
                       setNewHabitDrinksPerWeek(val === '' ? '' : Number(val));
                     }}
-                    className="w-full p-3 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
+                    className="w-full p-2.5 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                    {lang === 'id' ? 'Biaya rata-rata sekali sesi minum (Rp)' : 'Cost per session (Rp)'}
+                    {lang === 'id' ? 'Biaya sekali sesi minum (Rp)' : 'Cost per session (Rp)'}
                   </label>
                   <input
                     type="text"
                     value={newHabitSessionCost}
                     onChange={e => setNewHabitSessionCost(formatNumberInput(parseNumberInput(e.target.value)))}
-                    className="w-full p-3 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
+                    className="w-full p-2.5 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
                     placeholder="150.000"
                   />
                 </div>
               </div>
             )}
 
-            {/* FORM KHUSUS REHAB (BIAYA DOSIS / ZAT FLEKSIBEL: HARI / MINGGU / BULAN) */}
+            {/* FORM KHUSUS REHAB (BIAYA DOSIS) */}
             {habitToConfigure.id === 'narcotics' && (
-              <div className="space-y-3 pt-2 border-t border-[#DDD5FF]">
+              <div className="space-y-3 pt-3 border-t border-[#DDD5FF]">
                 <div>
                   <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                    {lang === 'id' ? 'Hitung biaya zat/paket berdasarkan apa?' : 'Calculate dose expense by?'}
+                    {lang === 'id' ? 'Hitung biaya zat berdasarkan apa?' : 'Calculate dose expense by?'}
                   </label>
                   <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#FAF8FF] border border-[#DDD5FF] rounded-xl">
                     {[
@@ -4495,19 +4484,16 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 <div>
                   <label className="text-xs font-bold text-[#1E1B38] block mb-1">
                     {lang === 'id' 
-                      ? `Berapa perkiraan pengeluaran ${newHabitDosePeriod === 'day' ? 'per hari' : newHabitDosePeriod === 'week' ? 'per minggu' : 'per bulan'}? (Rp)` 
-                      : `Estimated expense ${newHabitDosePeriod === 'day' ? 'per day' : newHabitDosePeriod === 'week' ? 'per week' : 'per month'}? (Rp)`}
+                      ? `Pengeluaran ${newHabitDosePeriod === 'day' ? 'per hari' : newHabitDosePeriod === 'week' ? 'per minggu' : 'per bulan'} (Rp)` 
+                      : `Expense ${newHabitDosePeriod === 'day' ? 'per day' : newHabitDosePeriod === 'week' ? 'per week' : 'per month'} (Rp)`}
                   </label>
                   <input
                     type="text"
                     value={newHabitDoseCost}
                     onChange={e => setNewHabitDoseCost(formatNumberInput(parseNumberInput(e.target.value)))}
-                    className="w-full p-3 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
+                    className="w-full p-2.5 rounded-xl border border-[#DDD5FF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] focus:border-[#6367FF] outline-none"
                     placeholder="200.000"
                   />
-                  <span className="text-[10px] text-[#6D6796] mt-0.5 block">
-                    {lang === 'id' ? 'Uang yang berhasil kamu selamatkan dari pembelian zat terlarang.' : 'Money saved from buying substance doses.'}
-                  </span>
                 </div>
               </div>
             )}
@@ -4549,9 +4535,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 setHabitToConfigure(null);
                 showToast(lang === 'id' ? `Program ${habitToConfigure.name} berhasil diaktifkan!` : `${habitToConfigure.name} tracking started!`);
               }}
-              className="w-full py-3.5 rounded-xl bg-[#6367FF] hover:bg-[#4F53EB] text-white font-black text-xs shadow-lg shadow-[#6367FF]/30 active:scale-95 transition-all"
+              className="w-full py-3.5 rounded-xl bg-[#6367FF] hover:bg-[#4F53EB] text-white font-black text-xs shadow-lg shadow-[#6367FF]/30 active:scale-95 transition-all mt-2"
             >
-              {lang === 'id' ? 'Mulai Pantau & Simpan Perhitungan' : 'Start Tracking & Save Calculations'}
+              {lang === 'id' ? 'Mulai Pantau Program' : 'Start Tracking'}
             </button>
           </div>
         </div>
