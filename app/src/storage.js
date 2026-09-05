@@ -229,12 +229,41 @@ export async function banUserByAdmin(adminUsername, targetUsername, isBan) {
   return await resp.json();
 }
 
-// 9. API Validasi Postingan Komunitas
-export async function checkCommunityPostContent(content) {
-  const resp = await fetch(`${API_BASE_URL}/community/check-post`, {
+// 9. POST Komunitas Baru (Simpan ke Server)
+export async function postToCommunity(postData) {
+  const resp = await fetch(`${API_BASE_URL}/community/post`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content })
+    body: JSON.stringify(postData)
+  });
+  return await resp.json();
+}
+
+// 10. GET Feed Komunitas Global
+export async function fetchCommunityFeed() {
+  const resp = await fetch(`${API_BASE_URL}/community/feed`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  return await resp.json();
+}
+
+// 11. Like/Unlike Post Komunitas
+export async function toggleCommunityLike(postId, username, action) {
+  const resp = await fetch(`${API_BASE_URL}/community/like`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ postId, username, action })
+  });
+  return await resp.json();
+}
+
+// 12. Delete Post Komunitas
+export async function deleteCommunityPost(postId, username) {
+  const resp = await fetch(`${API_BASE_URL}/community/delete`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ postId, username })
   });
   return await resp.json();
 }

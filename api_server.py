@@ -10,6 +10,15 @@ from constants_badwords import contains_forbidden_words, censor_ethnic_words, is
 
 PORT = 8090
 DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'againstme.db')
+
+# SQLite Connection Helper dengan Timeout & WAL
+def get_db_connection():
+    """Buat koneksi SQLite dengan timeout 10 detik dan WAL mode"""
+    conn = sqlite3.connect(DB_FILE, timeout=10.0)
+    conn.execute('PRAGMA journal_mode=WAL;')
+    conn.execute('PRAGMA busy_timeout=10000;')  # 10 detik busy timeout
+    return conn
+
 # Baca API key 9Router dari .env jika ada
 env_file = os.path.expanduser('~/.hermes/.env')
 loaded_key = None
@@ -27,9 +36,8 @@ ROUTER_URL = "http://127.0.0.1:20128/v1/chat/completions"
 ROUTER_API_KEY = os.environ.get("HERMES_CUSTOM_192_168_1_9_20128_API_KEY", loaded_key or "sk-antigravity")
 
 def init_db():
-    conn = sqlite3.connect(DB_FILE)
+    conn = get_db_connection()
     c = conn.cursor()
-    c.execute('PRAGMA journal_mode=WAL;')
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
@@ -170,7 +178,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 return
 
             try:
-                conn = sqlite3.connect(DB_FILE)
+                conn = get_db_connection()
                 c = conn.cursor()
                 c.execute('''
                     INSERT INTO users (username, name, email, password, bio, photo_url, state_json)
@@ -196,7 +204,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             identifier = body.get('email', '').strip().lower()
             password = body.get('password', '')
 
-            conn = sqlite3.connect(DB_FILE)
+            conn = get_db_connection()
             c = conn.cursor()
             c.execute('''
                 SELECT username, name, email, bio, photo_url, state_json, password, is_banned 
@@ -255,7 +263,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Semua kolom wajib diisi'}).encode('utf-8'))
                 return
 
-            conn = sqlite3.connect(DB_FILE)
+            conn = get_db_connection()
             c = conn.cursor()
             # Cek kecocokan kombinasi username dan email
             c.execute('''
@@ -313,7 +321,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Username is required'}).encode('utf-8'))
                 return
 
-            conn = sqlite3.connect(DB_FILE)
+            conn = get_db_connection()
             c = conn.cursor()
             c.execute('SELECT password FROM users WHERE username = ?', (username,))
             row = c.fetchone()
@@ -365,7 +373,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Username required'}).encode('utf-8'))
                 return
 
-            conn = sqlite3.connect(DB_FILE)
+            conn = get_db_connection()
             c = conn.cursor()
             c.execute('''
                 UPDATE users 
@@ -393,7 +401,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Akses ditolak. Khusus Administrator.'}).encode('utf-8'))
                 return
 
-            conn = sqlite3.connect(DB_FILE)
+            conn = get_db_connection()
             c = conn.cursor()
             c.execute('SELECT username, name, email, bio, is_banned, created_at FROM users ORDER BY created_at DESC')
             users = []
@@ -435,7 +443,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Tidak dapat menonaktifkan akun admin utama'}).encode('utf-8'))
                 return
 
-            conn = sqlite3.connect(DB_FILE)
+            conn = get_db_connection()
             c = conn.cursor()
             c.execute('UPDATE users SET is_banned = ? WHERE username = ?', (1 if ban_status else 0, target_user))
             conn.commit()
@@ -447,9 +455,24 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({'success': True, 'message': f'User @{target_user} status updated'}).encode('utf-8'))
 
-        # 6. POSTING KOMUNITAS (DENGAN FILTER KATA TERLARANG + SENSOR NAMA SUKU)
-        elif self.path == '/api/community/check-post':
+        # 6. POST KOMUNITAS BARU (SIMPAN KE DATABASE SERVER)
+        elif self.path == '/api/community/post':
+            post_id = body.get('id', '')
+            user_id = body.get('userId', '')
+            username = body.get('username', '').strip().lower()
+            name = body.get('name', '')
+            avatar = body.get('avatar', '')
+            photo_url = body.get('photoUrl', '')
             content = body.get('content', '')
+            created_at = body.get('createdAt', '')
+            
+            if not post_id or not username or not content:
+                self.send_response(400)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Data post tidak lengkap'}).encode('utf-8'))
+                return
             
             # Cek kata terlarang ekstrem (ditolak total)
             is_bad, bad_word = contains_forbidden_words(content)
@@ -464,6 +487,14 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             # Sensor nama suku/etnis (diizinkan tapi disensor jadi ****)
             censored_content = censor_ethnic_words(content)
             
+            # Simpan ke database
+            cursor = get_db_cursor()
+            cursor.execute('''
+                INSERT INTO community_posts (id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '[]')
+            ''', (post_id, user_id, username, name, avatar, photo_url, censored_content, created_at))
+            get_db_connection().commit()
+            
             self.send_response(200)
             self._send_cors()
             self.send_header('Content-Type', 'application/json')
@@ -472,6 +503,139 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 'success': True,
                 'censored_content': censored_content
             }).encode('utf-8'))
+            return
+
+        # 7. GET FEED KOMUNITAS (GLOBAL FEED DARI SEMUA USER)
+        elif self.path.startswith('/api/community/feed'):
+            cursor = get_db_cursor()
+            
+            # Ambil 100 post terbaru (sorted by created_at DESC)
+            cursor.execute('''
+                SELECT id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by
+                FROM community_posts
+                ORDER BY created_at DESC
+                LIMIT 100
+            ''')
+            
+            rows = cursor.fetchall()
+            posts = []
+            for row in rows:
+                posts.append({
+                    'id': row[0],
+                    'userId': row[1],
+                    'username': row[2],
+                    'name': row[3],
+                    'avatar': row[4],
+                    'photoUrl': row[5],
+                    'content': row[6],
+                    'createdAt': row[7],
+                    'likes': row[8],
+                    'likedBy': json.loads(row[9]) if row[9] else []
+                })
+            
+            self.send_response(200)
+            self._send_cors()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'posts': posts}).encode('utf-8'))
+            return
+
+        # 8. LIKE/UNLIKE POST KOMUNITAS
+        elif self.path == '/api/community/like':
+            post_id = body.get('postId', '')
+            username = body.get('username', '').strip().lower()
+            action = body.get('action', 'like')  # 'like' atau 'unlike'
+            
+            if not post_id or not username:
+                self.send_response(400)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Data tidak lengkap'}).encode('utf-8'))
+                return
+            
+            cursor = get_db_cursor()
+            cursor.execute('SELECT likes, liked_by FROM community_posts WHERE id = ?', (post_id,))
+            row = cursor.fetchone()
+            
+            if not row:
+                self.send_response(404)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Post tidak ditemukan'}).encode('utf-8'))
+                return
+            
+            current_likes = row[0]
+            liked_by = json.loads(row[1]) if row[1] else []
+            
+            if action == 'like' and username not in liked_by:
+                liked_by.append(username)
+                current_likes += 1
+            elif action == 'unlike' and username in liked_by:
+                liked_by.remove(username)
+                current_likes -= 1
+            
+            cursor.execute('''
+                UPDATE community_posts
+                SET likes = ?, liked_by = ?
+                WHERE id = ?
+            ''', (current_likes, json.dumps(liked_by), post_id))
+            get_db_connection().commit()
+            
+            self.send_response(200)
+            self._send_cors()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                'success': True,
+                'likes': current_likes,
+                'likedBy': liked_by
+            }).encode('utf-8'))
+            return
+
+        # 9. DELETE POST KOMUNITAS
+        elif self.path == '/api/community/delete':
+            post_id = body.get('postId', '')
+            username = body.get('username', '').strip().lower()
+            
+            if not post_id or not username:
+                self.send_response(400)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Data tidak lengkap'}).encode('utf-8'))
+                return
+            
+            cursor = get_db_cursor()
+            # Cek apakah post milik user ini
+            cursor.execute('SELECT username FROM community_posts WHERE id = ?', (post_id,))
+            row = cursor.fetchone()
+            
+            if not row:
+                self.send_response(404)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Post tidak ditemukan'}).encode('utf-8'))
+                return
+            
+            if row[0] != username:
+                self.send_response(403)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Kamu hanya bisa hapus postingan sendiri'}).encode('utf-8'))
+                return
+            
+            cursor.execute('DELETE FROM community_posts WHERE id = ?', (post_id,))
+            get_db_connection().commit()
+            
+            self.send_response(200)
+            self._send_cors()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
             return
 
         # 4. CHAT AI VIA 9ROUTER COMBO (ISOLASI JALUR & KONTEKS KHUSUS PER USER)

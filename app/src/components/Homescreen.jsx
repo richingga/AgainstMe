@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getPmoRank } from '../constants/pmo';
 import { formatCurrency, formatNumberInput, parseNumberInput } from '../utils/currency';
-import { registerUserOnServer, loginUserOnServer, resetPasswordOnServer, deleteAccountOnServer, fetchAdminUsers, banUserByAdmin, checkCommunityPostContent } from '../storage';
+import { registerUserOnServer, loginUserOnServer, resetPasswordOnServer, deleteAccountOnServer, fetchAdminUsers, banUserByAdmin, postToCommunity, fetchCommunityFeed, toggleCommunityLike, deleteCommunityPost } from '../storage';
 import { getRandomGoal } from '../constants/goals';
 import { HABIT_SOS_DATA } from '../constants/sosData';
 import SmartBreathingModal from './SmartBreathingModal';
@@ -563,42 +563,40 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     if (!requireRegistration(lang === 'id' ? 'membuat postingan di Komunitas' : 'post in the Community')) return;
     if (!postInput.trim()) return;
 
-    let finalContent = postInput.trim();
-
-    try {
-      const check = await checkCommunityPostContent(postInput.trim());
-      if (check.error) {
-        alert(check.error);
-        return;
-      }
-      // Gunakan konten yang sudah disensor dari backend
-      if (check.censored_content) {
-        finalContent = check.censored_content;
-      }
-    } catch (e) {
-      console.warn('Filter bypass due to network', e);
-    }
-
     const newPost = {
       id: Date.now().toString(),
-      author: user.name || 'Rocky',
+      userId: user.username || 'guest',
       username: user.username || 'rocky_warrior',
+      name: user.name || 'Rocky',
+      avatar: (user.name || 'Rocky')[0].toUpperCase(),
       photoUrl: user.photoUrl || null,
-      habit: habitLabelMap[activeHabit] || 'PMO',
-      streakDays: timeDiff.days,
-      time: 'Just now',
-      timeId: 'Barusan',
-      content: finalContent,  // Gunakan konten yang sudah disensor
+      content: postInput.trim(),
+      createdAt: new Date().toISOString(),
       likes: 0,
+      likedBy: [],
       isLiked: false
     };
 
-    updateAppState({
-      communityPosts: [newPost, ...communityPosts]
-    });
+    try {
+      // Kirim ke server (validasi + simpan)
+      const res = await postToCommunity(newPost);
+      if (res.error) {
+        alert(res.error);
+        return;
+      }
 
-    setPostInput('');
-    showToast(lang === 'id' ? 'Ceritamu terkirim ke komunitas!' : 'Post published to community!');
+      // Reload feed dari server setelah post berhasil
+      const feedRes = await fetchCommunityFeed();
+      if (feedRes.posts) {
+        updateAppState({ communityPosts: feedRes.posts });
+      }
+
+      setPostInput('');
+      showToast(lang === 'id' ? 'Ceritamu terkirim ke komunitas!' : 'Post published to community!');
+    } catch (e) {
+      console.error('Post error:', e);
+      alert(lang === 'id' ? 'Gagal mengirim postingan. Cek koneksi internet.' : 'Failed to post. Check your connection.');
+    }
   }
 
   // Handle Admin Hapus Postingan Komunitas
