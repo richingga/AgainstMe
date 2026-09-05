@@ -4,7 +4,7 @@ import { getRandomGoal } from '../constants/goals';
 import { loginUserOnServer, resetPasswordOnServer } from '../storage';
 
 export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, onToggleLang }) {
-  const [step, setStep] = useState('landing'); // 'landing' | 'step1' | 'step2' | 'step3'
+  const [step, setStep] = useState('landing'); // 'landing' | 'step1' | 'step2'
 
   // Modal Login & Reset Password dari Halaman Depan
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -83,12 +83,10 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
   }
 
   function finish() {
-    const finalTag = usernameTag.trim() 
-      ? usernameTag.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8) 
-      : 'pejuang';
-    const finalName = finalTag;
+    // Tanggal mulai otomatis hari ini detik ini
+    const startIso = new Date().toISOString();
 
-    // Jika user kosongkan barang impian, pilihkan barang random lucu/keren
+    // Jika user kosongkan barang impian, pilihkan barang random
     let goalObj;
     if (customGoalName.trim() && parseNumberInput(customGoalTarget) > 0) {
       goalObj = {
@@ -108,7 +106,7 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
 
     onComplete({
       habits: selectedHabits,
-      startDate: startDate || todayStr,
+      startDate: startIso,
       cigsPerDay: Number(cigsPerDay) || 16,
       cigsPerPack: Number(cigsPerPack) || 20,
       packPrice: parseNumberInput(packPrice) || 35000,
@@ -117,8 +115,8 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
       doseCost: parseNumberInput(doseCost) || 200000,
       dosePeriod: dosePeriod || 'day',
       savingsGoal: goalObj,
-      name: finalName,
-      username: finalTag
+      name: 'Pejuang',
+      username: 'pejuang'
     });
   }
 
@@ -440,7 +438,6 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
           onClick={() => {
             if (step === 'step1') setStep('landing');
             else if (step === 'step2') setStep('step1');
-            else if (step === 'step3') setStep(hasFinanceHabit ? 'step2' : 'step1');
           }}
           className="w-10 h-10 rounded-full border border-[#C9BEFF] bg-white flex items-center justify-center text-[#1E1B38]"
         >
@@ -449,9 +446,8 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
           </svg>
         </button>
         <span className="text-xs font-bold text-[#6D6796]">
-          {step === 'step1' && (lang === 'id' ? 'LANGKAH 1 DARI 3' : 'STEP 1 OF 3')}
-          {step === 'step2' && (lang === 'id' ? 'LANGKAH 2 DARI 3' : 'STEP 2 OF 3')}
-          {step === 'step3' && (lang === 'id' ? 'LANGKAH TERAKHIR' : 'FINAL STEP')}
+          {step === 'step1' && (hasFinanceHabit ? (lang === 'id' ? 'LANGKAH 1 DARI 2' : 'STEP 1 OF 2') : (lang === 'id' ? 'LANGKAH TERAKHIR' : 'FINAL STEP'))}
+          {step === 'step2' && (lang === 'id' ? 'LANGKAH TERAKHIR' : 'FINAL STEP')}
         </span>
         <button 
           onClick={onToggleLang}
@@ -494,8 +490,8 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
                     isSelected ? 'border-[#6367FF] bg-[#6367FF] text-white' : 'border-[#C9BEFF] bg-white'
                   }`}>
                     {isSelected && (
-                      <svg className="w-3.5 h-3.5 stroke-white" viewBox="0 0 24 24" fill="none" strokeWidth="3.5" strokeLinecap="round">
-                        <path d="M5 13l4 4L19 7"/>
+                      <svg className="w-3.5 h-3.5 stroke-white" viewBox="0 0 24 24" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
                       </svg>
                     )}
                   </div>
@@ -507,11 +503,13 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
           <button
             onClick={() => {
               if (hasFinanceHabit) setStep('step2');
-              else setStep('step3');
+              else finish();
             }}
             className="w-full py-4 rounded-2xl bg-[#6367FF] text-white font-bold text-base shadow-lg shadow-[#6367FF]/25 active:scale-[0.98]"
           >
-            {lang === 'id' ? `Lanjutkan (${selectedHabits.length} Terpilih)` : `Continue (${selectedHabits.length} Selected)`}
+            {hasFinanceHabit 
+              ? (lang === 'id' ? `Lanjutkan (${selectedHabits.length} Terpilih)` : `Continue (${selectedHabits.length} Selected)`)
+              : (lang === 'id' ? 'Mulai Perjalanan' : 'Start Journey')}
           </button>
         </div>
       )}
@@ -707,66 +705,10 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
           </div>
 
           <button
-            onClick={() => setStep('step3')}
+            onClick={finish}
             className="w-full py-4 rounded-2xl bg-[#6367FF] text-white font-bold text-base shadow-lg shadow-[#6367FF]/25 active:scale-[0.98]"
           >
-            {lang === 'id' ? 'Lanjutkan' : 'Continue'}
-          </button>
-        </div>
-      )}
-
-      {/* STEP 3: USERNAME UNTUK KOMUNITAS & TANGGAL BERHENTI */}
-      {step === 'step3' && (
-        <div className="my-auto">
-          <h2 className="text-2xl font-extrabold text-[#1E1B38] mb-2">
-            {lang === 'id' ? 'Buat identitas pejuangmu' : 'Create your warrior identity'}
-          </h2>
-          <p className="text-xs text-[#6D6796] mb-6">
-            {lang === 'id' 
-              ? 'Username @handle digunakan untuk saling sapa dan berbagi di Komunitas.' 
-              : '@handle username will be used to interact in the Community.'}
-          </p>
-
-          <div className="bg-white border border-[#C9BEFF] rounded-3xl p-5 mb-6 space-y-4">
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="text-xs font-bold text-[#1E1B38]">
-                  {lang === 'id' ? 'Username Komunitas' : 'Community Username'}
-                </label>
-                <span className="text-[10px] font-bold text-[#8494FF]">Maks. 8 Karakter</span>
-              </div>
-              <div className="relative flex items-center">
-                <span className="absolute left-3.5 font-bold text-xs text-[#6D6796] select-none pointer-events-none">@</span>
-                <input
-                  type="text"
-                  maxLength={8}
-                  value={usernameTag}
-                  onChange={e => setUsernameTag(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8))}
-                  placeholder="pejuang"
-                  className="w-full p-3 pl-8 rounded-xl border border-[#DDD5FF] text-xs font-bold text-[#1E1B38] outline-none focus:border-[#6367FF]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-[#1E1B38] block mb-1.5">
-                {lang === 'id' ? 'Kapan Mulai Berhenti?' : 'When did you quit?'}
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                max={todayStr}
-                onChange={e => setStartDate(e.target.value)}
-                className="w-full p-3.5 rounded-xl border border-[#C9BEFF] bg-[#FAF8FF] text-[#1E1B38] font-bold text-base outline-none focus:border-[#6367FF]"
-              />
-            </div>
-          </div>
-
-          <button
-            onClick={finish}
-            className="w-full py-4 rounded-2xl bg-[#6367FF] text-white font-bold text-base shadow-lg shadow-[#8494FF]/30 active:scale-[0.98]"
-          >
-            {lang === 'id' ? 'Gabung Komunitas & Masuk' : 'Join Community & Enter'}
+            {lang === 'id' ? 'Mulai Perjalanan' : 'Start Journey'}
           </button>
         </div>
       )}
