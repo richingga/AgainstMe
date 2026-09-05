@@ -19,6 +19,10 @@ def get_db_connection():
     conn.execute('PRAGMA busy_timeout=10000;')  # 10 detik busy timeout
     return conn
 
+def get_db_cursor():
+    """Helper untuk dapetin cursor dari koneksi global"""
+    return get_db_connection().cursor()
+
 # Baca API key 9Router dari .env jika ada
 env_file = os.path.expanduser('~/.hermes/.env')
 loaded_key = None
@@ -114,6 +118,40 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({'status': 'ok', 'service': 'AgainstMe API Backend'}).encode('utf-8'))
+        
+        elif self.path.startswith('/api/community/feed'):
+            cursor = get_db_cursor()
+            
+            # Ambil 100 post terbaru (sorted by created_at DESC)
+            cursor.execute('''
+                SELECT id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by
+                FROM community_posts
+                ORDER BY created_at DESC
+                LIMIT 100
+            ''')
+            
+            rows = cursor.fetchall()
+            posts = []
+            for row in rows:
+                posts.append({
+                    'id': row[0],
+                    'userId': row[1],
+                    'username': row[2],
+                    'name': row[3],
+                    'avatar': row[4],
+                    'photoUrl': row[5],
+                    'content': row[6],
+                    'createdAt': row[7],
+                    'likes': row[8],
+                    'likedBy': json.loads(row[9]) if row[9] else []
+                })
+            
+            self.send_response(200)
+            self._send_cors()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'posts': posts}).encode('utf-8'))
+        
         else:
             self.send_response(404)
             self._send_cors()
@@ -488,12 +526,14 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             censored_content = censor_ethnic_words(content)
             
             # Simpan ke database
-            cursor = get_db_cursor()
+            conn = get_db_connection()
+            cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO community_posts (id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '[]')
             ''', (post_id, user_id, username, name, avatar, photo_url, censored_content, created_at))
-            get_db_connection().commit()
+            conn.commit()
+            conn.close()
             
             self.send_response(200)
             self._send_cors()
@@ -505,42 +545,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             }).encode('utf-8'))
             return
 
-        # 7. GET FEED KOMUNITAS (GLOBAL FEED DARI SEMUA USER)
-        elif self.path.startswith('/api/community/feed'):
-            cursor = get_db_cursor()
-            
-            # Ambil 100 post terbaru (sorted by created_at DESC)
-            cursor.execute('''
-                SELECT id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by
-                FROM community_posts
-                ORDER BY created_at DESC
-                LIMIT 100
-            ''')
-            
-            rows = cursor.fetchall()
-            posts = []
-            for row in rows:
-                posts.append({
-                    'id': row[0],
-                    'userId': row[1],
-                    'username': row[2],
-                    'name': row[3],
-                    'avatar': row[4],
-                    'photoUrl': row[5],
-                    'content': row[6],
-                    'createdAt': row[7],
-                    'likes': row[8],
-                    'likedBy': json.loads(row[9]) if row[9] else []
-                })
-            
-            self.send_response(200)
-            self._send_cors()
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({'posts': posts}).encode('utf-8'))
-            return
-
-        # 8. LIKE/UNLIKE POST KOMUNITAS
+        # 7. LIKE/UNLIKE POST KOMUNITAS
         elif self.path == '/api/community/like':
             post_id = body.get('postId', '')
             username = body.get('username', '').strip().lower()
@@ -554,11 +559,13 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Data tidak lengkap'}).encode('utf-8'))
                 return
             
-            cursor = get_db_cursor()
+            conn = get_db_connection()
+            cursor = conn.cursor()
             cursor.execute('SELECT likes, liked_by FROM community_posts WHERE id = ?', (post_id,))
             row = cursor.fetchone()
             
             if not row:
+                conn.close()
                 self.send_response(404)
                 self._send_cors()
                 self.send_header('Content-Type', 'application/json')
@@ -581,7 +588,8 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 SET likes = ?, liked_by = ?
                 WHERE id = ?
             ''', (current_likes, json.dumps(liked_by), post_id))
-            get_db_connection().commit()
+            conn.commit()
+            conn.close()
             
             self.send_response(200)
             self._send_cors()
@@ -607,12 +615,14 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Data tidak lengkap'}).encode('utf-8'))
                 return
             
-            cursor = get_db_cursor()
+            conn = get_db_connection()
+            cursor = conn.cursor()
             # Cek apakah post milik user ini
             cursor.execute('SELECT username FROM community_posts WHERE id = ?', (post_id,))
             row = cursor.fetchone()
             
             if not row:
+                conn.close()
                 self.send_response(404)
                 self._send_cors()
                 self.send_header('Content-Type', 'application/json')
@@ -621,6 +631,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 return
             
             if row[0] != username:
+                conn.close()
                 self.send_response(403)
                 self._send_cors()
                 self.send_header('Content-Type', 'application/json')
@@ -629,7 +640,8 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 return
             
             cursor.execute('DELETE FROM community_posts WHERE id = ?', (post_id,))
-            get_db_connection().commit()
+            conn.commit()
+            conn.close()
             
             self.send_response(200)
             self._send_cors()

@@ -204,6 +204,24 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     updateAppState({ chatMessages: newMessages });
   }
 
+  // Load feed komunitas dari server saat buka tab komunitas
+  useEffect(() => {
+    if (activeSheet === 'community' && isRegistered) {
+      fetchCommunityFeed()
+        .then(res => {
+          if (res.posts) {
+            // Mark setiap post dengan isLiked berdasarkan username user di likedBy array
+            const postsWithLikeStatus = res.posts.map(p => ({
+              ...p,
+              isLiked: (p.likedBy || []).includes(user.username)
+            }));
+            updateAppState({ communityPosts: postsWithLikeStatus });
+          }
+        })
+        .catch(err => console.error('Failed to fetch community feed:', err));
+    }
+  }, [activeSheet, isRegistered]);
+
   // Hitung jumlah chat AI yang belum dibaca (pesan AI yang masuk setelah lastReadChatTime)
   const unreadAiCount = chatMessages.filter(m => {
     if (m.sender !== 'ai') return false;
@@ -600,12 +618,24 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
   }
 
   // Handle Admin Hapus Postingan Komunitas
-  function handleDeleteCommunityPost(postId) {
+  async function handleDeleteCommunityPost(postId) {
     if (!isAdmin) return;
     if (window.confirm(lang === 'id' ? 'Hapus postingan ini dari komunitas?' : 'Delete this post?')) {
-      const filtered = communityPosts.filter(p => p.id !== postId);
-      updateAppState({ communityPosts: filtered });
-      showToast(lang === 'id' ? 'Postingan berhasil dihapus' : 'Post deleted');
+      try {
+        const res = await deleteCommunityPost(postId, 'admin');
+        if (res.success) {
+          // Reload feed dari server
+          const feedRes = await fetchCommunityFeed();
+          if (feedRes.posts) {
+            updateAppState({ communityPosts: feedRes.posts });
+          }
+          showToast(lang === 'id' ? 'Postingan berhasil dihapus' : 'Post deleted');
+        } else {
+          showToast(res.error || 'Gagal hapus postingan');
+        }
+      } catch (err) {
+        showToast(lang === 'id' ? 'Gagal terhubung ke server' : 'Connection error');
+      }
     }
   }
 
@@ -700,19 +730,35 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     e.target.value = '';
   }
 
-  function handleToggleLike(postId) {
+  async function handleToggleLike(postId) {
     if (!requireRegistration(lang === 'id' ? 'memberikan respek' : 'give respect')) return;
-    const updated = communityPosts.map(p => {
-      if (p.id === postId) {
-        return {
-          ...p,
-          likes: p.isLiked ? p.likes - 1 : p.likes + 1,
-          isLiked: !p.isLiked
-        };
+    
+    // Cari post untuk cek status like saat ini
+    const post = communityPosts.find(p => p.id === postId);
+    if (!post) return;
+    
+    const action = post.isLiked ? 'unlike' : 'like';
+    
+    try {
+      const res = await toggleCommunityLike(postId, user.username, action);
+      if (res.success) {
+        // Update lokal langsung untuk responsiveness
+        const updated = communityPosts.map(p => {
+          if (p.id === postId) {
+            return {
+              ...p,
+              likes: res.likes,
+              likedBy: res.likedBy,
+              isLiked: res.likedBy.includes(user.username)
+            };
+          }
+          return p;
+        });
+        updateAppState({ communityPosts: updated });
       }
-      return p;
-    });
-    updateAppState({ communityPosts: updated });
+    } catch (err) {
+      console.error('Toggle like error:', err);
+    }
   }
 
   async function handleSendChat(textToSend) {
