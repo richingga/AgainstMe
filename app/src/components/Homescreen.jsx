@@ -894,7 +894,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
   function handleSaveProfile(e) {
     e.preventDefault();
-    const cleanUsername = editUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8) || user.username;
+    const cleanUsername = editUsername.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8) || user?.username || 'rocky';
     const cleanName = cleanUsername;
     const cleanPhoto = editPhotoPreview;
 
@@ -1872,9 +1872,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                     {(communityTab === 'mentions' ? mentionPosts : communityPosts).map(post => {
                       const isMentioningMe = post.content.toLowerCase().includes(myUsernameTag);
                       // Tampilkan foto profil user aktif jika postingan milik user saat ini
-                      const isMyPost = post.username === user.username;
-                      const displayPhoto = isMyPost ? (user.photoUrl || post.photoUrl) : post.photoUrl;
-                      const displayName = isMyPost ? (user.name || post.author) : post.author;
+                      const isMyPost = post.username === (user?.username || '');
+                      const displayPhoto = isMyPost ? (user?.photoUrl || post.photoUrl) : post.photoUrl;
+                      const displayName = isMyPost ? (user?.name || post.author) : post.author;
 
                       return (
                         <div 
@@ -3711,7 +3711,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                         {lang === 'id' ? 'Status Akun' : 'Account Status'}
                       </div>
                       <div className="text-xs text-[#6367FF] font-bold">
-                        {isRegistered ? `@${user.username}` : (lang === 'id' ? 'Mode Tamu' : 'Guest Mode')}
+                        {isRegistered ? `@${user?.username || 'user'}` : (lang === 'id' ? 'Mode Tamu' : 'Guest Mode')}
                       </div>
                     </div>
                     <span className="text-xs font-bold text-[#6367FF]">
@@ -4373,7 +4373,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 e.preventDefault();
                 setIsDeletingAccount(true);
                 try {
-                  const res = await deleteAccountOnServer(user.username, deleteAccountPassword);
+                  const res = await deleteAccountOnServer(user?.username || '', deleteAccountPassword);
                   if (res.error) {
                     showToast(res.error);
                     setIsDeletingAccount(false);
