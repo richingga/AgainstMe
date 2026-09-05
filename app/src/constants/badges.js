@@ -1,9 +1,29 @@
 // Definisi Trofi & Badge Pencapaian Komprehensif (AgainstMe Achievement System)
 // Dari fase awal, bulanan, tahunan, hingga level Mythic 10 Tahun (3.650 Hari)
-// Strictly NO emojis - Modern Clean SVG outlines & Iris/Lavender Theme
+export function getWarriorRank(unlockedCount, lang = 'id') {
+  if (unlockedCount >= 12) {
+    return {
+      title: lang === 'id' ? 'Legenda Merdeka Hidup (Mythic)' : 'Living Sovereign Legend',
+      color: 'text-purple-700 bg-purple-50 border-purple-200'
+    };
+  } else if (unlockedCount >= 8) {
+    return {
+      title: lang === 'id' ? 'Pilar Kedaulatan Diri (Gold)' : 'Pillar of Self-Mastery',
+      color: 'text-yellow-700 bg-yellow-50 border-yellow-200'
+    };
+  } else if (unlockedCount >= 4) {
+    return {
+      title: lang === 'id' ? 'Ksatria Tekad Baja (Silver)' : 'Silver Will Knight',
+      color: 'text-blue-700 bg-blue-50 border-blue-200'
+    };
+  }
+  return {
+    title: lang === 'id' ? 'Inisiat Pejuang' : 'Warrior Initiate',
+    color: 'text-amber-700 bg-amber-50 border-amber-200'
+  };
+}
 
 export const BADGE_DEFINITIONS = [
-  // === FASE INSIASI & BULANAN (0 - 90 HARI) ===
   {
     id: 'first_24h',
     category: 'streak',

@@ -7,7 +7,7 @@ import { HABIT_SOS_DATA } from '../constants/sosData';
 import SmartBreathingModal from './SmartBreathingModal';
 import ColdWaterModal from './ColdWaterModal';
 import { generateStreakStoryCanvas } from '../utils/storyCanvas';
-import { BADGE_DEFINITIONS } from '../constants/badges';
+import { BADGE_DEFINITIONS, getWarriorRank } from '../constants/badges';
 import { HEALTH_RECOVERY_DATA } from '../constants/healthRecovery';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -57,8 +57,8 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     if (isRegistered && user?.username) {
       const currentDays = timeDiff.days || 0;
       const targetHabitName = habitLabelMap[activeHabit] || 'PMO';
-      const myRank = pmoInfo.title || 'Inisiat Pejuang';
-      
+      const myRank = currentWarriorRank.title || 'Inisiat Pejuang';
+
       // Susun pesan natural check-in tanpa strip (-)
       const autoPostContent = lang === 'id'
         ? `Hari ke ${currentDays} tanpa ${targetHabitName}! Kondisiku hari ini terasa: ${moodLabel}. Tetap semangat berjuang bareng kawan kawan pejuang! 🔥`
@@ -285,7 +285,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 author: p.name || p.author || p.username || 'Pejuang',
                 habit: p.habit || 'PMO',
                 streakDays: p.streakDays !== undefined ? p.streakDays : (p.streak_days !== undefined ? p.streak_days : 0),
-                rank: p.rank || '',
+                rank: p.rank || 'Inisiat Pejuang',
                 timeId: p.timeId || p.time_str || 'Barusan',
                 time: p.time || p.time_str || 'Just now',
                 isLiked: (p.likedBy || []).includes(user?.username || '')
@@ -469,8 +469,8 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     }
   }, [timeDiff.days, habits, totalMoneySavedRaw, communityPosts, user?.username]);
 
-  // Memoized daftar trofi terbuka & tertutup
-  const { unlockedBadges, lockedBadges, nextTargetBadge } = useMemo(() => {
+  // Memoized daftar trofi terbuka & tertutup serta Gelar Kedaulatan Pejuang
+  const { unlockedBadges, lockedBadges, nextTargetBadge, currentWarriorRank } = useMemo(() => {
     const unlocked = BADGE_DEFINITIONS.filter(b => {
       try { return b.checkUnlocked(userStats); } catch(e) { return false; }
     });
@@ -478,8 +478,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
       try { return !b.checkUnlocked(userStats); } catch(e) { return true; }
     });
     const next = locked.find(b => b.category === 'streak') || locked[0] || null;
-    return { unlockedBadges: unlocked, lockedBadges: locked, nextTargetBadge: next };
-  }, [userStats]);
+    const rankInfo = getWarriorRank(unlocked.length, lang);
+    return { unlockedBadges: unlocked, lockedBadges: locked, nextTargetBadge: next, currentWarriorRank: rankInfo };
+  }, [userStats, lang]);
 
   function requireRegistration(featureName) {
     if (!isRegistered) {
@@ -679,7 +680,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
       photoUrl: user?.photoUrl || null,
       habit: habitLabelMap[activeHabit] || 'PMO',
       streakDays: timeDiff.days || 0,
-      rank: pmoInfo.title || 'Inisiat Pejuang',
+      rank: currentWarriorRank.title || 'Inisiat Pejuang',
       time: 'Just now',
       timeId: 'Barusan',
       content: postInput.trim().replace(/Hari ke-(\d+)/gi, 'Hari ke $1').replace(/Hari-ke/gi, 'Hari ke'),
@@ -731,7 +732,19 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
           // Reload feed dari server
           const feedRes = await fetchCommunityFeed();
           if (feedRes.posts) {
-            updateAppState({ communityPosts: feedRes.posts });
+            const cleanUpdatedPosts = feedRes.posts
+              .filter(p => p && !['p1', 'p2', 'p3'].includes(p.id))
+              .map(p => ({
+                ...p,
+                author: p.name || p.author || p.username || 'Pejuang',
+                habit: p.habit || 'PMO',
+                streakDays: p.streakDays !== undefined ? p.streakDays : (p.streak_days !== undefined ? p.streak_days : 0),
+                rank: p.rank || 'Inisiat Pejuang',
+                timeId: p.timeId || p.time_str || 'Barusan',
+                time: p.time || p.time_str || 'Just now',
+                isLiked: (p.likedBy || []).includes(user?.username || '')
+              }));
+            updateAppState({ communityPosts: cleanUpdatedPosts });
           }
           showToast(lang === 'id' ? 'Postingan berhasil dihapus' : 'Post deleted');
         } else {
@@ -2035,9 +2048,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                                   </span>
 
                                   {/* Tingkat Kedaulatan di Komunitas */}
-                                  {(post.rank || (post.streakDays !== undefined ? getPmoRank(post.streakDays, lang).title : null)) && (
+                                  {post.rank && (
                                     <span className="px-2 py-0.5 rounded-md bg-[#FAF8FF] text-[#6367FF] text-[9px] font-black border border-[#C9BEFF]">
-                                      {post.rank || getPmoRank(post.streakDays, lang).title}
+                                      {post.rank}
                                     </span>
                                   )}
 
@@ -2120,26 +2133,30 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                     <img 
                       src={user.photoUrl} 
                       alt="Avatar" 
-                      className="w-16 h-16 rounded-full object-cover border-2 border-[#6367FF] shadow-sm"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-[#6367FF] shadow-sm shrink-0"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-full bg-[#ECE9FF] flex items-center justify-center font-black text-[#6367FF] text-2xl border-2 border-[#6367FF]/20">
+                    <div className="w-16 h-16 rounded-full bg-[#ECE9FF] flex items-center justify-center font-black text-[#6367FF] text-2xl border-2 border-[#6367FF]/20 shrink-0">
                       {(user?.name || 'R').charAt(0).toUpperCase()}
                     </div>
                   )}
 
-                  <div className="flex-1">
-                    <h4 className="font-extrabold text-lg text-[#1E1B38]">@{user.username || 'pejuang'}</h4>
-                    {/* Tingkat Kedaulatan di Profil */}
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#6367FF]/10 text-[#6367FF] border border-[#6367FF]/30">
-                        {lang === 'id' ? 'Tingkat Kedaulatan' : 'Sovereignty Tier'}
-                      </span>
-                      <span className="text-xs font-extrabold text-[#1E1B38]">
-                        {pmoInfo.title || (lang === 'id' ? 'Inisiat Pejuang' : 'Warrior Initiate')}
+                  <div className="flex-1 flex flex-col justify-center min-w-0">
+                    {/* Perisai kecil di atas username dengan keterangan trofi yang sama dengan halaman trofi */}
+                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#ECE9FF] border border-[#C9BEFF] w-fit mb-1">
+                      <svg className="w-3 h-3 stroke-[#6367FF]" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      </svg>
+                      <span className="text-[10px] font-black text-[#6367FF] tracking-wide truncate">
+                        {currentWarriorRank.title}
                       </span>
                     </div>
-                    <span className="text-[11px] text-[#6D6796] mt-1 block">
+
+                    <h4 className="font-extrabold text-lg text-[#1E1B38] leading-tight truncate">
+                      @{user.username || 'pejuang'}
+                    </h4>
+
+                    <span className="text-[11px] text-[#6D6796] mt-0.5 block truncate">
                       {isRegistered 
                         ? (lang === 'id' ? 'Akun Terverifikasi Komunitas' : 'Verified Community Member') 
                         : (lang === 'id' ? 'Akun Tamu (Data Lokal)' : 'Guest Account (Local Data)')}
@@ -2155,7 +2172,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                         setEditPhotoPreview(user.photoUrl || null);
                         setActiveSheet('editProfile');
                       }}
-                      className="px-3 py-1.5 rounded-xl border border-[#C9BEFF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] hover:bg-[#C9BEFF]/30"
+                      className="px-3 py-1.5 rounded-xl border border-[#C9BEFF] bg-[#FAF8FF] text-xs font-bold text-[#1E1B38] hover:bg-[#C9BEFF]/30 shrink-0"
                     >
                       {lang === 'id' ? 'Edit' : 'Edit'}
                     </button>
@@ -2344,14 +2361,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
               }).length;
 
               // Hitung Tingkatan Gelar Pejuang (Mastery Tier)
-              let warriorRank = { titleId: 'Inisiat Pejuang', titleEn: 'Warrior Initiate', color: 'text-amber-700 bg-amber-50 border-amber-200' };
-              if (unlockedCount >= 12) {
-                warriorRank = { titleId: 'Legenda Merdeka Hidup (Mythic)', titleEn: 'Living Sovereign Legend', color: 'text-purple-700 bg-purple-50 border-purple-200' };
-              } else if (unlockedCount >= 8) {
-                warriorRank = { titleId: 'Pilar Kedaulatan Diri (Gold)', titleEn: 'Pillar of Self-Mastery', color: 'text-yellow-700 bg-yellow-50 border-yellow-200' };
-              } else if (unlockedCount >= 4) {
-                warriorRank = { titleId: 'Ksatria Tekad Baja (Silver)', titleEn: 'Silver Will Knight', color: 'text-blue-700 bg-blue-50 border-blue-200' };
-              }
+              const warriorRank = getWarriorRank(unlockedCount, lang);
 
               const filteredBadges = BADGE_DEFINITIONS.filter(b => {
                 if (badgeCategoryTab === 'all') return true;
@@ -2377,7 +2387,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                           {lang === 'id' ? 'Tingkat Kedaulatan Saat Ini' : 'Current Mastery Tier'}
                         </span>
                         <h4 className="text-base font-black text-[#1E1B38]">
-                          {lang === 'id' ? warriorRank.titleId : warriorRank.titleEn}
+                          {warriorRank.title}
                         </h4>
                       </div>
                       <span className="text-xs font-black text-[#6367FF] bg-[#ECE9FF] px-3 py-1.5 rounded-xl border border-[#C9BEFF]">

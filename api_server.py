@@ -530,7 +530,9 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             
             habit = body.get('habit', 'PMO')
             streak_days = body.get('streakDays', 0)
-            rank = body.get('rank', '')
+            rank = body.get('rank', 'Inisiat Pejuang')
+            if not rank:
+                rank = 'Inisiat Pejuang'
             
             # Simpan ke database
             conn = get_db_connection()
