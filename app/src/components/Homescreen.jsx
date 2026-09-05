@@ -1459,18 +1459,18 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
           </div>
         )}
 
-            {/* SOS EMERGENCY BUTTON (MINIMALIST CRISP PRO LOOK - BEBAS GLOW NEON LEBAY) */}
+            {/* SOS EMERGENCY BUTTON (MINIMALIST CRISP PRO LOOK - FULL WIDTH MOBILE, COMPACT DESKTOP) */}
             <button 
               onClick={() => setActiveSheet('sos')}
-              className="w-full py-4 px-6 rounded-2xl bg-[#1E1B38] hover:bg-[#2A264F] text-white font-extrabold text-sm shadow-xs flex items-center justify-center gap-3 active:scale-[0.98] border border-[#DDD5FF]/30 transition-all group"
+              className="w-full md:w-auto md:self-start py-3.5 md:py-3 px-5 rounded-2xl bg-[#1E1B38] hover:bg-[#2A264F] text-white font-extrabold text-[13px] md:text-xs shadow-xs flex items-center justify-center gap-2.5 active:scale-[0.98] border border-[#DDD5FF]/30 transition-all group"
             >
-              <div className="w-7 h-7 rounded-full bg-[#FF6584] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                <svg className="w-3.5 h-3.5 stroke-white" viewBox="0 0 24 24" fill="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <div className="w-6 h-6 md:w-5 md:h-5 rounded-full bg-[#FF6584] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <svg className="w-3 h-3 md:w-2.5 md:h-2.5 stroke-white" viewBox="0 0 24 24" fill="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7 7-7z"/>
                 </svg>
               </div>
-              <span className="tracking-wide text-sm font-bold">
-                {lang === 'id' ? 'Saya Butuh Bantuan Darurat' : "I Need Emergency Help (SOS)"}
+              <span className="tracking-wide font-bold whitespace-nowrap">
+                {lang === 'id' ? 'Butuh Bantuan Darurat' : "Emergency Help (SOS)"}
               </span>
             </button>
           </div>
