@@ -563,11 +563,17 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     if (!requireRegistration(lang === 'id' ? 'membuat postingan di Komunitas' : 'post in the Community')) return;
     if (!postInput.trim()) return;
 
+    let finalContent = postInput.trim();
+
     try {
       const check = await checkCommunityPostContent(postInput.trim());
       if (check.error) {
         alert(check.error);
         return;
+      }
+      // Gunakan konten yang sudah disensor dari backend
+      if (check.censored_content) {
+        finalContent = check.censored_content;
       }
     } catch (e) {
       console.warn('Filter bypass due to network', e);
@@ -582,7 +588,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
       streakDays: timeDiff.days,
       time: 'Just now',
       timeId: 'Barusan',
-      content: postInput.trim(),
+      content: finalContent,  // Gunakan konten yang sudah disensor
       likes: 0,
       isLiked: false
     };

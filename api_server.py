@@ -6,7 +6,7 @@ import os
 import sys
 import urllib.request
 import urllib.error
-from constants_badwords import contains_forbidden_words
+from constants_badwords import contains_forbidden_words, censor_ethnic_words
 
 PORT = 8090
 DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'againstme.db')
@@ -438,9 +438,11 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({'success': True, 'message': f'User @{target_user} status updated'}).encode('utf-8'))
 
-        # 6. POSTING KOMUNITAS (DENGAN FILTER KATA TERLARANG)
+        # 6. POSTING KOMUNITAS (DENGAN FILTER KATA TERLARANG + SENSOR NAMA SUKU)
         elif self.path == '/api/community/check-post':
             content = body.get('content', '')
+            
+            # Cek kata terlarang ekstrem (ditolak total)
             is_bad, bad_word = contains_forbidden_words(content)
             if is_bad:
                 self.send_response(400)
@@ -450,11 +452,18 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': f'Postingan mengandung kata yang dilarang ("{bad_word}"). Mari jaga ruang ini tetap aman dan positif!'}).encode('utf-8'))
                 return
 
+            # Sensor nama suku/etnis (diizinkan tapi disensor jadi ****)
+            censored_content = censor_ethnic_words(content)
+            
             self.send_response(200)
             self._send_cors()
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
+            self.wfile.write(json.dumps({
+                'success': True,
+                'censored_content': censored_content
+            }).encode('utf-8'))
+            return
 
         # 4. CHAT AI VIA 9ROUTER COMBO (ISOLASI JALUR & KONTEKS KHUSUS PER USER)
         elif self.path == '/api/chat':
@@ -471,10 +480,12 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             
             # Ambil maksimal 8 pesan terakhir agar isolasi konteks tetap terjaga per sesi obrolan
             for msg in messages[-8:]:
-                full_messages.append({
-                    "role": "user" if msg.get('sender') == 'user' else "assistant",
-                    "content": msg.get('text', '')
-                })
+                content = msg.get('text') or msg.get('content', '')
+                if content and content.strip():
+                    full_messages.append({
+                        "role": "user" if msg.get('sender') == 'user' else "assistant",
+                        "content": content.strip()
+                    })
 
             req_payload = {
                 "model": "combo-fast",
@@ -511,7 +522,9 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                                     pass
                     else:
                         res_body = json.loads(raw_text)
-                        reply = res_body['choices'][0]['message']['content'].strip()
+                        reply = res_body.get('choices', [{}])[0].get('message', {}).get('content', '')
+                        if reply:
+                            reply = reply.strip()
 
                     # Pembersihan otomatis: buang markdown asterisks (*), bullets (-), dan tanda kurung yang mengganggu
                     clean_reply = reply.replace('**', '').replace('*', '').replace('`', '')
