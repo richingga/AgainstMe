@@ -206,21 +206,21 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
   // Load feed komunitas dari server saat buka tab komunitas
   useEffect(() => {
-    if (activeSheet === 'community' && isRegistered) {
+    if (activeSheet === 'community' && isRegistered && user?.username) {
       fetchCommunityFeed()
         .then(res => {
           if (res.posts) {
             // Mark setiap post dengan isLiked berdasarkan username user di likedBy array
             const postsWithLikeStatus = res.posts.map(p => ({
               ...p,
-              isLiked: (p.likedBy || []).includes(user.username)
+              isLiked: (p.likedBy || []).includes(user.username || '')
             }));
             updateAppState({ communityPosts: postsWithLikeStatus });
           }
         })
         .catch(err => console.error('Failed to fetch community feed:', err));
     }
-  }, [activeSheet, isRegistered]);
+  }, [activeSheet, isRegistered, user?.username]);
 
   // Hitung jumlah chat AI yang belum dibaca (pesan AI yang masuk setelah lastReadChatTime)
   const unreadAiCount = chatMessages.filter(m => {
@@ -740,7 +740,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     const action = post.isLiked ? 'unlike' : 'like';
     
     try {
-      const res = await toggleCommunityLike(postId, user.username, action);
+      const res = await toggleCommunityLike(postId, user?.username || '', action);
       if (res.success) {
         // Update lokal langsung untuk responsiveness
         const updated = communityPosts.map(p => {
@@ -749,7 +749,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
               ...p,
               likes: res.likes,
               likedBy: res.likedBy,
-              isLiked: res.likedBy.includes(user.username)
+              isLiked: res.likedBy.includes(user?.username || '')
             };
           }
           return p;
