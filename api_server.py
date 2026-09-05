@@ -124,7 +124,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             
             # Ambil 100 post terbaru (sorted by created_at DESC)
             cursor.execute('''
-                SELECT id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by
+                SELECT id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by, habit, streak_days
                 FROM community_posts
                 ORDER BY created_at DESC
                 LIMIT 100
@@ -143,7 +143,9 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                     'content': row[6],
                     'createdAt': row[7],
                     'likes': row[8],
-                    'likedBy': json.loads(row[9]) if row[9] else []
+                    'likedBy': json.loads(row[9]) if row[9] else [],
+                    'habit': row[10] or 'PMO',
+                    'streakDays': row[11] if row[11] is not None else 0
                 })
             
             self.send_response(200)
@@ -525,13 +527,16 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             # Sensor nama suku/etnis (diizinkan tapi disensor jadi ****)
             censored_content = censor_ethnic_words(content)
             
+            habit = body.get('habit', 'PMO')
+            streak_days = body.get('streakDays', 0)
+            
             # Simpan ke database
             conn = get_db_connection()
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO community_posts (id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '[]')
-            ''', (post_id, user_id, username, name, avatar, photo_url, censored_content, created_at))
+                INSERT INTO community_posts (id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by, habit, streak_days)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '[]', ?, ?)
+            ''', (post_id, user_id, username, name, avatar, photo_url, censored_content, created_at, habit, streak_days))
             conn.commit()
             conn.close()
             

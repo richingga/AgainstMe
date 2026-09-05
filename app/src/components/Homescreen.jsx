@@ -31,7 +31,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
   const habitData = habits[activeHabit] || {};
 
   // Fungsi simpan check-in mood harian (1 hari = 1 pilihan, bisa diganti kapan saja)
-  function handleSaveCheckin(moodId, moodLabel) {
+  async function handleSaveCheckin(moodId, moodLabel) {
     const todayStr = new Date().toISOString().split('T')[0];
     
     // Filter buang checkin hari ini agar selalu tersisa 1 pilihan untuk hari ini
@@ -52,10 +52,74 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     const updatedCheckins = [currentCheckin, ...otherDaysCheckins];
     updateAppState({ checkins: updatedCheckins });
     showToast(lang === 'id' ? `Kondisi hari ini diperbarui: "${moodLabel}"` : `Today's mood updated: "${moodLabel}"`);
+
+    // Auto-share progres check-in ke Komunitas Pejuang jika user terdaftar
+    if (isRegistered && user?.username) {
+      const currentDays = timeDiff.days || 0;
+      const targetHabitName = habitLabelMap[activeHabit] || 'PMO';
+      
+      // Susun pesan natural check-in
+      const autoPostContent = lang === 'id'
+        ? `Hari ke-${currentDays} tanpa ${targetHabitName}! Kondisiku hari ini terasa: ${moodLabel}. Tetap semangat berjuang bareng kawan-kawan pejuang! 🔥`
+        : `Day ${currentDays} free from ${targetHabitName}! Feeling ${moodLabel} today. Keep fighting together everyone! 🔥`;
+
+      const autoCheckinPost = {
+        id: String(Date.now()),
+        userId: user?.username || 'user',
+        username: user?.username || 'pejuang',
+        name: user?.name || user?.username || 'Pejuang',
+        avatar: (user?.name || 'P')[0].toUpperCase(),
+        photoUrl: user?.photoUrl || null,
+        habit: targetHabitName,
+        streakDays: currentDays,
+        time: 'Just now',
+        timeId: 'Barusan',
+        content: autoPostContent,
+        createdAt: new Date().toISOString(),
+        likes: 0,
+        likedBy: [],
+        isLiked: false
+      };
+
+      // Optimistic update feed lokal
+      updateAppState(prev => ({
+        ...prev,
+        communityPosts: [autoCheckinPost, ...(prev.communityPosts || [])]
+      }));
+
+      // Kirim ke server di latar belakang
+      try {
+        await postToCommunity(autoCheckinPost);
+      } catch (err) {
+        console.warn('Gagal sync auto check-in post:', err);
+      }
+    }
+  }
+
+  // Helper hitung waktu relatif dinamis (nyata)
+  function getRelativeTimeStr(dateInput, targetLang = 'id') {
+    if (!dateInput) return targetLang === 'id' ? 'Barusan' : 'Just now';
+    const postTime = new Date(dateInput).getTime();
+    if (isNaN(postTime)) return targetLang === 'id' ? 'Barusan' : 'Just now';
+    const now = Date.now();
+    const diffSec = Math.max(0, Math.floor((now - postTime) / 1000));
+    
+    if (diffSec < 60) return targetLang === 'id' ? 'Barusan' : 'Just now';
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return targetLang === 'id' ? `${diffMin} menit lalu` : `${diffMin}m ago`;
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return targetLang === 'id' ? `${diffHour} jam lalu` : `${diffHour}h ago`;
+    const diffDay = Math.floor(diffHour / 24);
+    if (diffDay < 7) return targetLang === 'id' ? `${diffDay} hari lalu` : `${diffDay}d ago`;
+    const diffWeek = Math.floor(diffDay / 7);
+    if (diffWeek < 4) return targetLang === 'id' ? `${diffWeek} minggu lalu` : `${diffWeek}w ago`;
+    const diffMonth = Math.floor(diffDay / 30);
+    if (diffMonth < 12) return targetLang === 'id' ? `${diffMonth} bulan lalu` : `${diffMonth}mo ago`;
+    const diffYear = Math.floor(diffDay / 365);
+    return targetLang === 'id' ? `${diffYear} tahun lalu` : `${diffYear}y ago`;
   }
 
   // Modals / Sheets state
-  // 'settings' | 'community' | 'profile' | 'chat' | 'sos' | 'logUrge' | 'editDate' | 'authModal' | 'editProfile' | 'editGoal' | 'relapseModal' | 'relapseHistory'
   const [activeSheet, setActiveSheet] = useState(null); 
   const [toastMsg, setToastMsg] = useState(null);
 
@@ -1939,7 +2003,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                                     {post.habit} · {lang === 'id' ? `Hari ke-${post.streakDays}` : `Day ${post.streakDays}`}
                                   </span>
                                   <span>·</span>
-                                  <span>{lang === 'id' ? (post.timeId || post.time) : (post.time || post.timeId)}</span>
+                                  <span>{getRelativeTimeStr(post.createdAt, lang)}</span>
                                 </div>
                               </div>
                             </div>
