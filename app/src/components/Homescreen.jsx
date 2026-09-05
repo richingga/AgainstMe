@@ -811,9 +811,18 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
           return;
         }
 
+        // Pastikan data user dari server menimpa data lokal sepenuhnya
+        const serverUser = res.user || {};
         updateAppState({
           isRegistered: true,
-          user: { ...user, ...(res.user || {}) },
+          user: {
+            name: serverUser.name || 'Rocky',
+            username: serverUser.username || 'rocky',
+            email: serverUser.email || authEmail.trim(),
+            photoUrl: serverUser.photoUrl || null,
+            bio: serverUser.bio || '',
+            avatar: serverUser.avatar || (serverUser.username || 'R').charAt(0).toUpperCase()
+          },
           habits: res.state?.habits || habits,
           activeHabit: res.state?.activeHabit || activeHabit
         });

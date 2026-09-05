@@ -6,7 +6,7 @@ import os
 import sys
 import urllib.request
 import urllib.error
-from constants_badwords import contains_forbidden_words, censor_ethnic_words
+from constants_badwords import contains_forbidden_words, censor_ethnic_words, is_reserved_username
 
 PORT = 8090
 DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'againstme.db')
@@ -139,6 +139,15 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({'error': 'Username dan Email wajib diisi'}).encode('utf-8'))
+                return
+
+            # Cek Username Reserved (Presiden, Suku, Pulau, Agama, Tuhan)
+            if is_reserved_username(username):
+                self.send_response(400)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': f'Username "{username}" tidak dapat digunakan (nama reserved).'}).encode('utf-8'))
                 return
 
             # Filter Kata Terlarang pada Username dan Nama

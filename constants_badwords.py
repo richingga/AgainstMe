@@ -1,3 +1,24 @@
+# Daftar Username RESERVED (Tidak Boleh Dipakai User)
+RESERVED_USERNAMES = [
+    # Presiden Indonesia
+    'soekarno', 'soeharto', 'habibie', 'gusdur', 'megawati', 'sby', 'jokowi', 'prabowo',
+    'abdurrahman', 'susilo', 'yudhoyono', 'widodo', 'subianto',
+    # Tokoh Nasional & Pahlawan
+    'kartini', 'diponegoro', 'sudirman', 'hatta', 'sjahrir', 'tan_malaka', 'cut_nyak_dien',
+    'pattimura', 'hasanuddin', 'imam_bonjol', 'tuanku', 'teuku_umar',
+    # Pulau-Pulau Besar Indonesia
+    'sumatera', 'sumatra', 'jawa', 'kalimantan', 'borneo', 'sulawesi', 'celebes',
+    'papua', 'irian', 'bali', 'lombok', 'sumbawa', 'flores', 'timor', 'maluku',
+    'nias', 'mentawai', 'bangka', 'belitung', 'madura', 'seram', 'halmahera',
+    # Nama Agama & Tuhan
+    'allah', 'god', 'jesus', 'yesus', 'kristus', 'christ', 'buddha', 'budha',
+    'shiva', 'siwa', 'brahma', 'wisnu', 'vishnu', 'muhammad', 'prophet', 'nabi',
+    'tuhan', 'dewa', 'dewi', 'sang_hyang',
+    # Brand & Sistem Reserved
+    'admin', 'root', 'moderator', 'staff', 'support', 'official', 'againstme',
+    'system', 'bot', 'service', 'api', 'test', 'demo', 'guest'
+]
+
 # Daftar Kata Terlarang - DITOLAK TOTAL (Profanity, SARA Ekstrem, Judi, Pornografi)
 FORBIDDEN_WORDS = [
     # Kata Kasar & Vulgar Ekstrem
@@ -47,6 +68,12 @@ ETHNIC_WORDS = [
     # Tambahan Etnis
     'tionghoa', 'cina', 'chindo', 'arab', 'india', 'tamil', 'pribumi'
 ]
+
+def is_reserved_username(username: str) -> bool:
+    """Cek apakah username termasuk dalam daftar reserved"""
+    if not username:
+        return False
+    return username.lower() in RESERVED_USERNAMES or username.lower() in ETHNIC_WORDS
 
 def contains_forbidden_words(text: str) -> tuple[bool, str]:
     """Cek kata terlarang - DITOLAK TOTAL"""
