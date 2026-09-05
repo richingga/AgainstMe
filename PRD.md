@@ -1,13 +1,13 @@
 # PRD — "AgainstMe — Quit Addiction"
 **Produk:** Web App (PWA) Pendamping Berhenti Kecanduan
 **Versi:** 0.2 (Draft) — 4 September 2026
-**Owner:** Yang Mulia
+**Owner:** Ngaaeth
 
 ---
 
 ## 1. Ringkasan Produk
 
-Bebas adalah web app yang membantu orang berhenti dari kecanduan (pornografi/PMO, rokok, obat-obatan, alkohol) melalui pelacakan progres harian, kalkulator penghematan uang, dukungan komunitas anonim, dan asisten AI yang siap menemani saat craving datang.
+AgainstMe adalah web app yang membantu orang berhenti dari kecanduan (pornografi/PMO, rokok, obat-obatan, alkohol) melalui pelacakan progres harian, kalkulator penghematan uang, dukungan komunitas anonim, dan asisten AI yang siap menemani saat craving datang.
 
 **Satu kalimat:** "Teman berhenti yang gak pernah tidur — catat streak, lihat uang yang kamu hemat, dan minta tolong AI kapanpun cravings nyerang."
 
@@ -42,7 +42,7 @@ Bebas adalah web app yang membantu orang berhenti dari kecanduan (pornografi/PMO
 
 ---
 
-## 5. Scope MVP (Build First — Jangan Nambah-Nambah 😄)
+## 5. Scope MVP (Build First)
 
 | ID | Fitur | Deskripsi Singkat |
 |----|-------|-------------------|
@@ -57,13 +57,13 @@ Bebas adalah web app yang membantu orang berhenti dari kecanduan (pornografi/PMO
 
 ---
 
-## 6. Backlog Fase 2 & 3 (Belakangan Aja)
+## 6. Backlog Fase 2 & 3
 
 - **Relapse flow (prioritas naik ke fase 1.5):** saat user relapse, gak ada shaming — modal "Kamu udah dapat X hari sebelumnya, itu bukan hilang. Mau mulai lagi sekarang?" + AI ajak analisa trigger singkat (pilih: stress, bosan, teman, lobby, dst) → dicatat buat pola pribadi.
 - **Shareable Streak Card (fase 1.5):** Generate kartu visual cantik ("Day 47 • Rp 1.2M saved • AgainstMe") — share ke IG Story/WA Status. Mesin viral + trofi kebanggaan user.
 - **Dopamine Menu / Replacement Activities (fase 1.5):** User bikin daftar personal pengganti craving (pushup, mandi dingin, jalan, telepon teman). Muncul otomatis pas SOS. Evidence-based competing response.
 - **Letter to Future Self (fase 2):** Hari 1 nulis surat buat diri sendiri 90 hari lagi. Hari ke-90 surat "terbuka" — momen emosional powerful.
-- **Supporter Mode (fase 2):** Orang terdekat opt-in dapet update halus ("Aldi is 30 days strong 💪") TANPA lihat detail kecanduan/journal. Accountability tanpa bongkar privasi.
+- **Supporter Mode (fase 2):** Orang terdekat opt-in dapet update halus ("Aldi is 30 days strong") TANPA lihat detail kecanduan/journal. Accountability tanpa bongkar privasi.
 - **Crisis Escalation (WAJIB sebelum rilis publik):** AI deteksi tanda bahaya (depresi berat, bicara bunuh diri) → langsung tampilkan hotline profesional per negara (ID: BNN 184, Into The Light). Bukan fitur pamer — tanggung jawab moral.
 - **Urge Heatmap (fase 2-3):** Visualisasi kalender kapan craving paling sering (hari apa, jam berapa). User bisa antisipasi & siapkan distraction.
 - **Streak Freeze 1x/bulan (fase 2):** Kayak Duolingo — sekali sebulan boleh "freeze" streak kalau keadaan darurat. Mengurangi all-or-nothing thinking.
@@ -156,11 +156,11 @@ Klik "Lagi Goda!" → Layar meredup, kalm → Pilihan:
    - Wajib backend proxy (serverless function / edge function) — API key TIDAK BOLEH ada di frontend browser user.
    - System prompt AI companion harus disimpan di backend, bukan di client.
 4. **Jenis kecanduan (fixed list, 5 kategori):**
-   - 🚬 Rokok (Tobacco)
-   - 🎰 Judi / Judol (Gambling)
-   - 📱 PMO / Pornografi
-   - 🍺 Alkohol
-   - 💊 Narkoba / Obat-obatan
+   -  Rokok (Tobacco)
+   -  Judi / Judol (Gambling)
+   -  PMO / Pornografi
+   -  Alkohol
+   -  Narkoba / Obat-obatan
 5. **Kalkulator hemat (dinamis per kecanduan):**
    - **Rokok:** Onboarding tanya batang/hari + harga per bungkus → hemat otomatis terhitung selama streak jalan.
    - **Alkohol:** Onboarding tanya frekuensi minum + rata-rata pengeluaran per sesi → hemat otomatis.
@@ -176,7 +176,7 @@ Klik "Lagi Goda!" → Layar meredup, kalm → Pilihan:
          - Hari 61–90: **Rank 5 — Penakluk Nafsu** (Reboot otak hampir tuntas, gaya hidup baru)
          - Hari >90: **Rank 6 — Pria Berdaulat** (Penguasaan diri total)
        - Setiap rank dilengkapi pesan motivasi psikologis harian yang relate dengan fase reboot otak.
-   - **Judi/Judol:** Model "Urge Piggybank" (Celengan Penyelamat) — BUKAN onboarding statis. Setiap kali user pengen judi (merasa godaan), dia buka app dan ketik nominal yang mau dipake judi (misal Rp 200.000). Nominal itu "ditabung" secara virtual, diakumulasi. Counter menampilkan total uang yang berhasil "diselamatkan" + konteks belanja: "Uangmu sudah cukup buat beli Nintendo Switch 🎮". Ini mengubah momen godaan jadi momen penyelamatan uang — setiap godaan yang dikalahkan justru nambah tabungan Celengan Penyelamat.
+   - **Judi/Judol:** Model "Urge Piggybank" (Celengan Penyelamat) — BUKAN onboarding statis. Setiap kali user pengen judi (merasa godaan), dia buka app dan ketik nominal yang mau dipake judi (misal Rp 200.000). Nominal itu "ditabung" secara virtual, diakumulasi. Counter menampilkan total uang yang berhasil "diselamatkan" + konteks belanja: "Uangmu sudah cukup buat beli Nintendo Switch ". Ini mengubah momen godaan jadi momen penyelamatan uang — setiap godaan yang dikalahkan justru nambah tabungan Celengan Penyelamat.
    - Data konsumsi bisa di-update user kapan saja (harga naik, kebiasaan berubah).
 4. **Branding/vibe:** Hangat & calm — palet warna:
    - Base: warm cream / soft sand (background, bukan putih mata menyala)
