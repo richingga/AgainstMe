@@ -42,19 +42,26 @@ jobs:
           cd app/android
           ./gradlew assembleDebug --stacktrace --no-daemon
 
-      - name: Rename APK to Againstmev1.apk
+      - name: Rename APK with Commit SHA
         run: |
-          cp app/android/app/build/outputs/apk/debug/app-debug.apk Againstmev1.apk
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          cp app/android/app/build/outputs/apk/debug/app-debug.apk AgainstMe-${SHORT_SHA}.apk
+          echo "APK_NAME=AgainstMe-${SHORT_SHA}.apk" >> $GITHUB_ENV
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
 
-      - name: Publish to GitHub Releases (Direct APK Download)
+      - name: Publish to GitHub Releases (Auto-versioned by Commit)
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: "AgainstMe v1.0 (Official APK)"
+          tag_name: build-${{ env.SHORT_SHA }}
+          name: "AgainstMe Build ${{ env.SHORT_SHA }}"
           body: |
-            Selamat datang di aplikasi pemulihan diri AgainstMe v1.0!
+            🚀 **AgainstMe APK Build**
             
-            Silakan klik link **Againstmev1.apk** di bawah untuk langsung mengunduh dan memasang di HP Android kamu.
-          files: Againstmev1.apk
+            📦 Commit: `${{ github.sha }}`
+            🔨 Build: ${{ env.SHORT_SHA }}
+            📅 Tanggal: ${{ github.event.head_commit.timestamp }}
+            
+            Klik **${{ env.APK_NAME }}** di bawah untuk download langsung ke HP Android.
+          files: ${{ env.APK_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
