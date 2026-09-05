@@ -209,3 +209,33 @@ export async function deleteAccountOnServer(username, password) {
   return await resp.json();
 }
 
+// 7. API Admin: Ambil Daftar Seluruh Pengguna
+export async function fetchAdminUsers(adminUsername) {
+  const resp = await fetch(`${API_BASE_URL}/admin/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminUser: adminUsername })
+  });
+  return await resp.json();
+}
+
+// 8. API Admin: Ban / Unban Pengguna
+export async function banUserByAdmin(adminUsername, targetUsername, isBan) {
+  const resp = await fetch(`${API_BASE_URL}/admin/ban-user`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminUser: adminUsername, targetUser: targetUsername, ban: isBan })
+  });
+  return await resp.json();
+}
+
+// 9. API Validasi Postingan Komunitas
+export async function checkCommunityPostContent(content) {
+  const resp = await fetch(`${API_BASE_URL}/community/check-post`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content })
+  });
+  return await resp.json();
+}
+

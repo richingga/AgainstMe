@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getPmoRank } from '../constants/pmo';
 import { formatCurrency, formatNumberInput, parseNumberInput } from '../utils/currency';
-import { registerUserOnServer, loginUserOnServer, resetPasswordOnServer, deleteAccountOnServer } from '../storage';
+import { registerUserOnServer, loginUserOnServer, resetPasswordOnServer, deleteAccountOnServer, fetchAdminUsers, banUserByAdmin, checkCommunityPostContent } from '../storage';
 import { getRandomGoal } from '../constants/goals';
 import { HABIT_SOS_DATA } from '../constants/sosData';
 import SmartBreathingModal from './SmartBreathingModal';
@@ -73,6 +73,11 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
   const [deleteAccountPassword, setDeleteAccountPassword] = useState('');
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  // Admin Moderation Console State (Khusus akun @admin)
+  const isAdmin = user?.username === 'admin';
+  const [adminUsersList, setAdminUsersList] = useState([]);
+  const [isLoadingAdminUsers, setIsLoadingAdminUsers] = useState(false);
 
   // Touch gesture state untuk swipe/slide ganti habit
   const touchStartXRef = useRef(null);
@@ -553,10 +558,20 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     handleSaveGoal(newGoal);
   }
 
-  // Handle posting ke feed komunitas
-  function handleCreatePost() {
+  // Handle posting ke feed komunitas dengan validasi filter kata terlarang
+  async function handleCreatePost() {
     if (!requireRegistration(lang === 'id' ? 'membuat postingan di Komunitas' : 'post in the Community')) return;
     if (!postInput.trim()) return;
+
+    try {
+      const check = await checkCommunityPostContent(postInput.trim());
+      if (check.error) {
+        alert(check.error);
+        return;
+      }
+    } catch (e) {
+      console.warn('Filter bypass due to network', e);
+    }
 
     const newPost = {
       id: Date.now().toString(),
@@ -578,6 +593,52 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
     setPostInput('');
     showToast(lang === 'id' ? 'Ceritamu terkirim ke komunitas!' : 'Post published to community!');
+  }
+
+  // Handle Admin Hapus Postingan Komunitas
+  function handleDeleteCommunityPost(postId) {
+    if (!isAdmin) return;
+    if (window.confirm(lang === 'id' ? 'Hapus postingan ini dari komunitas?' : 'Delete this post?')) {
+      const filtered = communityPosts.filter(p => p.id !== postId);
+      updateAppState({ communityPosts: filtered });
+      showToast(lang === 'id' ? 'Postingan berhasil dihapus' : 'Post deleted');
+    }
+  }
+
+  // Handle Admin Load Users
+  async function handleOpenAdminPanel() {
+    setActiveSheet('adminPanel');
+    setIsLoadingAdminUsers(true);
+    try {
+      const res = await fetchAdminUsers('admin');
+      if (res.success) {
+        setAdminUsersList(res.users || []);
+      } else {
+        showToast(res.error || 'Gagal memuat pengguna');
+      }
+    } catch (err) {
+      showToast('Gagal terhubung ke server');
+    } finally {
+      setIsLoadingAdminUsers(false);
+    }
+  }
+
+  // Handle Admin Ban / Unban User
+  async function handleToggleBanUser(targetUser, currentBanned) {
+    const actionName = currentBanned ? 'buka blokir' : 'blokir (ban)';
+    if (!window.confirm(`Yakin ingin ${actionName} @${targetUser}?`)) return;
+
+    try {
+      const res = await banUserByAdmin('admin', targetUser, !currentBanned);
+      if (res.success) {
+        setAdminUsersList(prev => prev.map(u => u.username === targetUser ? { ...u, isBanned: !currentBanned } : u));
+        showToast(`Status @${targetUser} berhasil diperbarui`);
+      } else {
+        alert(res.error || 'Gagal memperbarui status user');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan jaringan');
+    }
   }
 
   // Handle Ekspor Backup JSON
@@ -1542,6 +1603,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
             <div className="flex justify-between items-center pb-4 border-b border-[#C9BEFF] mb-4">
               <h3 className="font-extrabold text-lg text-[#1E1B38] capitalize">
                 {activeSheet === 'settings' && (lang === 'id' ? 'Pengaturan' : 'Settings')}
+                {activeSheet === 'adminPanel' && (lang === 'id' ? 'Panel Moderasi Admin' : 'Admin Moderation')}
                 {activeSheet === 'privacyPolicy' && (lang === 'id' ? 'Kebijakan Privasi' : 'Privacy Policy')}
                 {activeSheet === 'manageHabits' && (lang === 'id' ? 'Kelola & Tambah Program Habit' : 'Manage & Add Habits')}
                 {activeSheet === 'community' && (lang === 'id' ? 'Ruang Komunitas Pejuang' : 'Warriors Community')}
@@ -1802,6 +1864,22 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                                 </div>
                               </div>
                             </div>
+
+                            {/* Tombol Hapus Postingan Khusus Akun @admin */}
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleDeleteCommunityPost(post.id)}
+                                title="Hapus Postingan (Admin)"
+                                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                              >
+                                <svg className="w-4 h-4 stroke-red-500" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="3 6 5 6 21 6"/>
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                  <line x1="10" y1="11" x2="10" y2="17"/>
+                                  <line x1="14" y1="11" x2="14" y2="17"/>
+                                </svg>
+                              </button>
+                            )}
                           </div>
 
                           <p className="text-xs text-[#1E1B38] leading-relaxed pt-1">
@@ -3610,6 +3688,35 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   </svg>
                 </div>
 
+                {/* Tombol Rahasia Khusus Administrator (@admin) */}
+                {isAdmin && (
+                  <div 
+                    onClick={handleOpenAdminPanel}
+                    className="bg-gradient-to-r from-[#1E1B38] to-[#2E285C] border border-[#8494FF]/40 rounded-2xl p-4 flex justify-between items-center cursor-pointer shadow-md text-white group hover:border-[#6367FF] transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-[#C9BEFF]">
+                        <svg className="w-4 h-4 stroke-[#C9BEFF]" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                          <circle cx="12" cy="11" r="3"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-white flex items-center gap-1.5">
+                          <span>Panel Moderasi Admin</span>
+                          <span className="px-1.5 py-0.2 rounded bg-[#6367FF] text-[9px] font-black text-white uppercase tracking-wider">Khusus @admin</span>
+                        </div>
+                        <div className="text-[11px] text-[#C9BEFF]">
+                          Kelola user terdaftar & moderasi komunitas
+                        </div>
+                      </div>
+                    </div>
+                    <svg className="w-4 h-4 stroke-[#C9BEFF] group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
+                )}
+
                 {isRegistered ? (
                   <div className="space-y-2 pt-2">
                     <button
@@ -3654,6 +3761,81 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                     >
                       {lang === 'id' ? 'Hapus Seluruh Data Perangkat' : 'Wipe All Device Data'}
                     </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* PANEL MODERASI ADMIN (KHUSUS AKUN @admin) */}
+            {activeSheet === 'adminPanel' && (
+              <div className="space-y-4 text-left text-xs text-[#1E1B38]">
+                <div className="p-4 bg-gradient-to-br from-[#1E1B38] to-[#2E285C] border border-[#8494FF]/40 rounded-2xl text-white space-y-2">
+                  <span className="text-[10px] font-black uppercase text-[#C9BEFF] tracking-wider block">
+                    KONSOL ADMINISTRATOR
+                  </span>
+                  <h4 className="font-extrabold text-base text-white">
+                    Pusat Kendali Pengguna & Komunitas
+                  </h4>
+                  <p className="text-[#C9BEFF] text-[11px] leading-relaxed">
+                    Pantau akun terdaftar di SQLite STB dan blokir akun yang menggunakan username tidak pantas atau spammer.
+                  </p>
+                </div>
+
+                <div className="flex justify-between items-center px-1">
+                  <span className="font-bold text-xs text-[#1E1B38]">
+                    Daftar Pengguna ({adminUsersList.length})
+                  </span>
+                  <button
+                    onClick={handleOpenAdminPanel}
+                    className="text-[11px] font-bold text-[#6367FF] hover:underline"
+                  >
+                    Muat Ulang
+                  </button>
+                </div>
+
+                {isLoadingAdminUsers ? (
+                  <div className="p-8 text-center text-[#6D6796] animate-pulse">
+                    Memuat data pengguna dari STB...
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                    {adminUsersList.map(u => (
+                      <div 
+                        key={u.username}
+                        className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 ${
+                          u.isBanned 
+                            ? 'bg-red-50/70 border-red-200' 
+                            : 'bg-white border-[#DDD5FF]'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-extrabold text-xs text-[#1E1B38] truncate">{u.name}</span>
+                            <span className="font-bold text-[11px] text-[#6367FF] truncate">@{u.username}</span>
+                            {u.isBanned && (
+                              <span className="px-1.5 py-0.2 rounded bg-red-600 text-white font-black text-[9px]">
+                                DIBLOKIR
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-[#6D6796] truncate">{u.email}</div>
+                          <div className="text-[9px] text-[#8494FF] mt-0.5">Terdaftar: {u.createdAt?.slice(0, 10)}</div>
+                        </div>
+
+                        {u.username !== 'admin' && (
+                          <button
+                            onClick={() => handleToggleBanUser(u.username, u.isBanned)}
+                            className={`px-3 py-1.5 rounded-xl font-bold text-[11px] transition-colors ${
+                              u.isBanned
+                                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                : 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                            }`}
+                          >
+                            {u.isBanned ? 'Buka Blokir' : 'Blokir (Ban)'}
+                          </button>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

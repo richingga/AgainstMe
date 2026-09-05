@@ -6,6 +6,7 @@ import os
 import sys
 import urllib.request
 import urllib.error
+from constants_badwords import contains_forbidden_words
 
 PORT = 8090
 DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'againstme.db')
@@ -38,8 +39,30 @@ def init_db():
             bio TEXT,
             photo_url TEXT,
             state_json TEXT,
+            is_banned INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Migration: pastikan kolom is_banned ada
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN is_banned INTEGER DEFAULT 0')
+    except Exception:
+        pass
+
+    # Buat tabel postingan komunitas yang tersinkronisasi global
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS community_posts (
+            id TEXT PRIMARY KEY,
+            author TEXT,
+            username TEXT,
+            photo_url TEXT,
+            habit TEXT,
+            streak_days INTEGER,
+            time_str TEXT,
+            content TEXT,
+            likes INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     conn.commit()
@@ -115,7 +138,26 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self._send_cors()
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'error': 'Username and Email are required'}).encode('utf-8'))
+                self.wfile.write(json.dumps({'error': 'Username dan Email wajib diisi'}).encode('utf-8'))
+                return
+
+            # Filter Kata Terlarang pada Username dan Nama
+            is_bad_u, bad_word_u = contains_forbidden_words(username)
+            if is_bad_u:
+                self.send_response(400)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': f'Username mengandung kata terlarang ("{bad_word_u}"). Gunakan username yang sopan.'}).encode('utf-8'))
+                return
+
+            is_bad_n, bad_word_n = contains_forbidden_words(name)
+            if is_bad_n:
+                self.send_response(400)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': f'Nama mengandung kata terlarang ("{bad_word_n}").'}).encode('utf-8'))
                 return
 
             try:
@@ -148,7 +190,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             conn = sqlite3.connect(DB_FILE)
             c = conn.cursor()
             c.execute('''
-                SELECT username, name, email, bio, photo_url, state_json, password 
+                SELECT username, name, email, bio, photo_url, state_json, password, is_banned 
                 FROM users WHERE email = ? OR username = ?
             ''', (identifier, identifier))
             row = c.fetchone()
@@ -159,7 +201,15 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self._send_cors()
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'error': 'Invalid credentials'}).encode('utf-8'))
+                self.wfile.write(json.dumps({'error': 'Kredensial tidak valid'}).encode('utf-8'))
+                return
+
+            if len(row) > 7 and row[7] == 1:
+                self.send_response(403)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Akun Anda telah dinonaktifkan oleh administrator karena melanggar aturan komunitas.'}).encode('utf-8'))
                 return
 
             state_data = json.loads(row[5]) if row[5] else {}
@@ -322,6 +372,89 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({'success': True, 'synced': True}).encode('utf-8'))
+
+        # 5. ADMIN ENDPOINTS (KHUSUS AKUN @admin)
+        elif self.path == '/api/admin/users':
+            admin_user = body.get('adminUser', '').strip().lower()
+            if admin_user != 'admin':
+                self.send_response(403)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Akses ditolak. Khusus Administrator.'}).encode('utf-8'))
+                return
+
+            conn = sqlite3.connect(DB_FILE)
+            c = conn.cursor()
+            c.execute('SELECT username, name, email, bio, is_banned, created_at FROM users ORDER BY created_at DESC')
+            users = []
+            for r in c.fetchall():
+                users.append({
+                    'username': r[0],
+                    'name': r[1],
+                    'email': r[2],
+                    'bio': r[3],
+                    'isBanned': bool(r[4]),
+                    'createdAt': r[5]
+                })
+            conn.close()
+
+            self.send_response(200)
+            self._send_cors()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'success': True, 'users': users}).encode('utf-8'))
+
+        elif self.path == '/api/admin/ban-user':
+            admin_user = body.get('adminUser', '').strip().lower()
+            target_user = body.get('targetUser', '').strip().lower()
+            ban_status = body.get('ban', True)
+
+            if admin_user != 'admin':
+                self.send_response(403)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Akses ditolak'}).encode('utf-8'))
+                return
+
+            if target_user == 'admin':
+                self.send_response(400)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': 'Tidak dapat menonaktifkan akun admin utama'}).encode('utf-8'))
+                return
+
+            conn = sqlite3.connect(DB_FILE)
+            c = conn.cursor()
+            c.execute('UPDATE users SET is_banned = ? WHERE username = ?', (1 if ban_status else 0, target_user))
+            conn.commit()
+            conn.close()
+
+            self.send_response(200)
+            self._send_cors()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'success': True, 'message': f'User @{target_user} status updated'}).encode('utf-8'))
+
+        # 6. POSTING KOMUNITAS (DENGAN FILTER KATA TERLARANG)
+        elif self.path == '/api/community/check-post':
+            content = body.get('content', '')
+            is_bad, bad_word = contains_forbidden_words(content)
+            if is_bad:
+                self.send_response(400)
+                self._send_cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': f'Postingan mengandung kata yang dilarang ("{bad_word}"). Mari jaga ruang ini tetap aman dan positif!'}).encode('utf-8'))
+                return
+
+            self.send_response(200)
+            self._send_cors()
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
 
         # 4. CHAT AI VIA 9ROUTER COMBO (ISOLASI JALUR & KONTEKS KHUSUS PER USER)
         elif self.path == '/api/chat':
