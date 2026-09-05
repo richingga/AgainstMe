@@ -106,6 +106,11 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept')
 
+    def do_HEAD(self):
+        self.send_response(200)
+        self._send_cors()
+        self.end_headers()
+
     def do_OPTIONS(self):
         self.send_response(200)
         self._send_cors()
@@ -639,7 +644,8 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({'error': 'Post tidak ditemukan'}).encode('utf-8'))
                 return
             
-            if row[0] != username:
+            # Admin (@admin) berhak hapus postingan siapapun
+            if row[0] != username and username != 'admin':
                 conn.close()
                 self.send_response(403)
                 self._send_cors()
