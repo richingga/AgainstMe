@@ -13,11 +13,11 @@ import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export default function Homescreen({ appState, updateAppState, onReset }) {
-  const { 
-    user = {}, 
-    lang = 'id', 
-    activeHabit, 
-    habits = {}, 
+  const {
+    user = { username: 'rocky_warrior', name: 'Rocky', email: '', photoUrl: null, bio: '', avatar: 'R' },
+    lang = 'id',
+    activeHabit,
+    habits = {},
     communityPosts = [], 
     isRegistered = false, 
     checkins = [],
