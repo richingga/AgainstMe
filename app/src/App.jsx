@@ -16,7 +16,11 @@ export default function App() {
     const primaryHabit = selectedList[0] || 'tobacco';
     
     const chosenDateStr = onboardingData.startDate;
-    const startIso = chosenDateStr ? new Date(`${chosenDateStr}T00:00:00`).toISOString() : new Date().toISOString();
+    const todayYmd = new Date().toISOString().split('T')[0];
+    // Jika tanggal yang dipilih adalah hari ini, pakai waktu saat ini persis (detik ini) agar timer mulai dari 00:00:00
+    const startIso = chosenDateStr
+      ? (chosenDateStr === todayYmd ? new Date().toISOString() : new Date(`${chosenDateStr}T00:00:00`).toISOString())
+      : new Date().toISOString();
 
     // Pastikan goal terisi atau dapat random
     let sharedGoal = onboardingData.savingsGoal;

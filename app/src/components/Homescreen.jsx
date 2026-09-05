@@ -511,7 +511,10 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
   function handleSaveNewDate() {
     if (!editDateValue) return;
-    const newIso = new Date(`${editDateValue}T00:00:00`).toISOString();
+    const todayYmd = new Date().toISOString().split('T')[0];
+    const newIso = (editDateValue === todayYmd)
+      ? new Date().toISOString()
+      : new Date(`${editDateValue}T00:00:00`).toISOString();
 
     updateAppState({
       habits: {
@@ -4837,7 +4840,11 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
               type="button"
               onClick={() => {
                 const hId = habitToConfigure.id;
-                const startIso = new Date(newHabitStartDate + 'T00:00:00').toISOString();
+                const todayYmd = new Date().toISOString().split('T')[0];
+                // Jika habit dimulai hari ini, pakai waktu detik ini agar timer mulai dari 00:00:00
+                const startIso = (newHabitStartDate === todayYmd)
+                  ? new Date().toISOString()
+                  : new Date(newHabitStartDate + 'T00:00:00').toISOString();
 
                 const newHabitConfig = {
                   active: true,
