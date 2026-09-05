@@ -663,7 +663,10 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     setIsAiTyping(true);
 
     try {
-      const res = await fetch(`http://${window.location.hostname}:8090/api/chat`, {
+      const chatApiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')
+        ? `http://${window.location.hostname}:8090/api/chat`
+        : 'https://api.againstme.my.id/api/chat';
+      const res = await fetch(chatApiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -874,9 +877,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
   }
 
   return (
-    <div className="min-h-screen max-w-md mx-auto flex flex-col justify-between pb-24 relative bg-[#FAF8FF]">
+    <div className="min-h-screen w-full max-w-md md:max-w-4xl lg:max-w-5xl mx-auto flex flex-col justify-between pb-24 md:pb-12 relative bg-[#FAF8FF]">
       {/* HEADER ELEGAN & MINIMALIS (CLEAN: HANYA AVATAR & BRANDING) */}
-      <div className="px-5 pt-6 pb-4 flex justify-between items-center">
+      <div className="px-5 pt-6 pb-4 flex justify-between items-center border-b border-[#DDD5FF]/40 md:border-none">
         {/* Avatar User (Klik untuk Buka Profil) */}
         <div 
           onClick={() => setActiveSheet('profile')}
@@ -954,23 +957,26 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
           </div>
         )}
 
-        {/* MAIN DASHBOARD CARDS */}
-        <div className="p-5 pt-2 space-y-4">
-        {/* LIVE STREAK CARD */}
-        <div className="bg-white border border-[#DDD5FF] rounded-3xl p-6 text-center shadow-sm relative overflow-hidden">
-          <div className="text-[11px] font-bold text-[#8494FF] uppercase tracking-wider mb-1">
-            {lang === 'id' ? 'Bersih Selama' : 'Clean Streak'}
-          </div>
+        {/* MAIN DASHBOARD CARDS (RESPONSIVE ADAPTIVE 2-COLUMN GRID) */}
+        <div className="p-5 pt-2 grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+          
+          {/* KOLOM KIRI (7 Kolom pada Desktop/Tablet): HERO STREAK, FINANSIAL & TOMBOL SOS */}
+          <div className="md:col-span-7 space-y-4">
+            {/* LIVE STREAK CARD */}
+            <div className="bg-white border border-[#DDD5FF] rounded-3xl p-6 text-center shadow-xs relative overflow-hidden transition-all">
+              <div className="text-[11px] font-bold text-[#8494FF] uppercase tracking-wider mb-1">
+                {lang === 'id' ? 'Bersih Selama' : 'Clean Streak'}
+              </div>
 
-          <div className="text-6xl font-black text-[#1E1B38] tracking-tight my-1">
-            {timeDiff.days}
-          </div>
-          <span className="text-sm font-extrabold text-[#6367FF] block mb-3.5">
-            {lang === 'id' ? 'Hari' : 'Days'}
-          </span>
-          <div className="inline-block px-4 py-2 rounded-xl bg-[#FAF8FF] font-mono font-black text-xs tracking-widest text-[#6367FF] border border-[#DDD5FF]">
-            {String(timeDiff.hours).padStart(2, '0')} : {String(timeDiff.minutes).padStart(2, '0')} : {String(timeDiff.seconds).padStart(2, '0')}
-          </div>
+              <div className="text-6xl font-black text-[#1E1B38] tracking-tight my-1">
+                {timeDiff.days}
+              </div>
+              <span className="text-sm font-extrabold text-[#6367FF] block mb-3.5">
+                {lang === 'id' ? 'Hari' : 'Days'}
+              </span>
+              <div className="inline-block px-4 py-2 rounded-xl bg-[#FAF8FF] font-mono font-black text-xs tracking-widest text-[#6367FF] border border-[#DDD5FF]">
+                {String(timeDiff.hours).padStart(2, '0')} : {String(timeDiff.minutes).padStart(2, '0')} : {String(timeDiff.seconds).padStart(2, '0')}
+              </div>
 
           {/* 3 TOMBOL AKSI SEJAJAR: SIMPLE, KOMPAK & WARNA SERASI */}
           <div className="mt-5 pt-3.5 border-t border-[#DDD5FF]/60 grid grid-cols-3 gap-2 items-center">
@@ -1206,23 +1212,26 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
           </div>
         )}
 
-        {/* SOS EMERGENCY BUTTON (DESAIN BERSIH TANPA TOMBOL TAMBAHAN) */}
-        <button 
-          onClick={() => setActiveSheet('sos')}
-          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#6367FF] via-[#8494FF] to-[#FF6584] hover:opacity-95 text-white font-black text-sm shadow-xl shadow-[#6367FF]/35 flex items-center justify-center gap-3 active:scale-[0.98] border border-white/20 transition-all group"
-        >
-          <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0 animate-pulse group-hover:scale-110 transition-transform">
-            <svg className="w-4 h-4 stroke-white" viewBox="0 0 24 24" fill="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7 7-7z"/>
-            </svg>
+            {/* SOS EMERGENCY BUTTON (MINIMALIST CRISP PRO LOOK - BEBAS GLOW NEON LEBAY) */}
+            <button 
+              onClick={() => setActiveSheet('sos')}
+              className="w-full py-4 px-6 rounded-2xl bg-[#1E1B38] hover:bg-[#2A264F] text-white font-extrabold text-sm shadow-xs flex items-center justify-center gap-3 active:scale-[0.98] border border-[#DDD5FF]/30 transition-all group"
+            >
+              <div className="w-7 h-7 rounded-full bg-[#FF6584] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <svg className="w-3.5 h-3.5 stroke-white" viewBox="0 0 24 24" fill="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7 7-7z"/>
+                </svg>
+              </div>
+              <span className="tracking-wide text-sm font-bold">
+                {lang === 'id' ? 'Saya Butuh Bantuan Darurat' : "I Need Emergency Help (SOS)"}
+              </span>
+            </button>
           </div>
-          <span className="tracking-wide text-sm font-black drop-shadow-sm">
-            {lang === 'id' ? 'Saya Hampir Menyerah' : "I'm About to Give Up (SOS)"}
-          </span>
-        </button>
 
-        {/* HEALTH RECOVERY TIMELINE WIDGET DI HOMESCREEN (TEPAT DI BAWAH TOMBOL SOS) */}
-        {(() => {
+          {/* KOLOM KANAN (5 Kolom pada Desktop/Tablet): TIMELINE PEMULIHAN, TROFI & DAILY CHECK-IN */}
+          <div className="md:col-span-5 space-y-4">
+            {/* HEALTH RECOVERY TIMELINE WIDGET DI HOMESCREEN */}
+            {(() => {
           const currentHabitRecovery = HEALTH_RECOVERY_DATA[activeHabit] || HEALTH_RECOVERY_DATA.tobacco;
           const habitStartSec = new Date(habitData.startDate || Date.now()).getTime();
           const elapsedSec = Math.max(0, Math.floor((Date.now() - habitStartSec) / 1000));
@@ -1454,12 +1463,13 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
               );
             })}
           </div>
-        </div>
-        </div>
-      </div>
+          </div>
+          </div>
+          </div>
+          </div>
 
-      {/* BOTTOM NAVIGATION */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#F7F5FF]/95 backdrop-blur-md border-t border-[#DDD5FF] p-3 flex justify-around items-center z-40">
+      {/* BOTTOM NAVIGATION (RESPONSIVE DOCK: COMPACT ON MOBILE, CENTERED FLOATING BAR ON DESKTOP) */}
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md md:max-w-md md:bottom-4 md:rounded-3xl mx-auto bg-[#F7F5FF]/95 backdrop-blur-md border border-[#DDD5FF] p-3 flex justify-around items-center z-40 shadow-lg shadow-[#1E1B38]/5">
         <button className="flex flex-col items-center gap-1 text-[#6367FF]">
           <svg className="w-5 h-5 stroke-[#6367FF]" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
           <span className="text-[10px] font-bold">Home</span>

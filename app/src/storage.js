@@ -1,6 +1,8 @@
 // Engine Sinkronisasi Dua Arah: Server (Registered) vs LocalStorage (Guest)
 const STORAGE_KEY = 'againstme_state_v1';
-const API_BASE_URL = `http://${window.location.hostname}:8090/api`;
+export const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')
+  ? `http://${window.location.hostname}:8090/api`
+  : 'https://api.againstme.my.id/api';
 
 export const initialAppData = {
   hasOnboarded: false,
