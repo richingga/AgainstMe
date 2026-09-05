@@ -2047,13 +2047,6 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                                     @{post.username}
                                   </span>
 
-                                  {/* Tingkat Kedaulatan di Komunitas */}
-                                  {post.rank && (
-                                    <span className="px-2 py-0.5 rounded-md bg-[#FAF8FF] text-[#6367FF] text-[9px] font-black border border-[#C9BEFF]">
-                                      {post.rank}
-                                    </span>
-                                  )}
-
                                   {isMentioningMe && (
                                     <span className="px-1.5 py-0.5 rounded bg-[#6367FF] text-white text-[9px] font-black">
                                       {lang === 'id' ? 'MENYAPAMU' : 'TAGGED YOU'}
@@ -2142,16 +2135,6 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   )}
 
                   <div className="flex-1 flex flex-col justify-center min-w-0">
-                    {/* Perisai kecil di atas username dengan keterangan trofi yang sama dengan halaman trofi */}
-                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#ECE9FF] border border-[#C9BEFF] w-fit mb-1">
-                      <svg className="w-3 h-3 stroke-[#6367FF]" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                      </svg>
-                      <span className="text-[10px] font-black text-[#6367FF] tracking-wide truncate">
-                        {currentWarriorRank.title}
-                      </span>
-                    </div>
-
                     <h4 className="font-extrabold text-lg text-[#1E1B38] leading-tight truncate">
                       @{user.username || 'pejuang'}
                     </h4>
