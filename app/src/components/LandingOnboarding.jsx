@@ -740,8 +740,8 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
                 <input
                   type="text"
                   maxLength={8}
-                  value={username}
-                  onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8))}
+                  value={usernameTag}
+                  onChange={e => setUsernameTag(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8))}
                   placeholder="pejuang"
                   className="w-full p-3 pl-8 rounded-xl border border-[#DDD5FF] text-xs font-bold text-[#1E1B38] outline-none focus:border-[#6367FF]"
                 />
