@@ -1,12 +1,20 @@
 // Engine Sinkronisasi Dua Arah: Server (Registered) vs LocalStorage (Guest)
 const STORAGE_KEY = 'againstme_state_v1';
-// Deteksi environment: di APK Android Capacitor, hostname adalah 'localhost'
-// Jadi jangan arahkan localhost ke port 8090 lokal ponsel, melainkan ke server tunnel produksi
-const isLocalDevelopment = (window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) && !window.Capacitor;
+// Deteksi environment:
+// 1. Web browser di local dev (127.0.0.1 / 192.168.x / localhost di browser PC/laptop dev)
+// 2. APK Android Capacitor dan Web Hostinger production -> selalu pakai https://api.againstme.my.id/api
+const isLocalDevPC = (window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) && !window.Capacitor;
 
-export const API_BASE_URL = isLocalDevelopment
+export const API_BASE_URL = isLocalDevPC
   ? `http://${window.location.hostname}:8090/api`
   : 'https://api.againstme.my.id/api';
+
+function getRandomGuestUsername() {
+  const randNum = Math.floor(1000 + Math.random() * 9000);
+  return `user${randNum}`;
+}
+
+const defaultGuestUser = getRandomGuestUsername();
 
 export const initialAppData = {
   hasOnboarded: false,
@@ -22,11 +30,11 @@ export const initialAppData = {
   },
   urgeLogs: [], // [{ id, timestamp: ISO, habit, trigger, intensity, note }]
   user: {
-    name: 'Rocky',
-    username: 'rocky_warrior',
+    name: defaultGuestUser,
+    username: defaultGuestUser,
     email: '',
     bio: 'Menolak kalah dari diri sendiri.',
-    avatar: 'R',
+    avatar: 'U',
     photoUrl: null,
     memberSince: new Date().toISOString()
   },

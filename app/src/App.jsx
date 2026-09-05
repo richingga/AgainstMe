@@ -102,9 +102,9 @@ export default function App() {
       hasOnboarded: true,
       lang: appState.lang || 'id',
       user: {
-        name: onboardingData.name || 'Rocky',
-        username: onboardingData.username || 'rocky_warrior',
-        avatar: (onboardingData.name || 'Rocky').charAt(0).toUpperCase(),
+        name: onboardingData.name || `user${Math.floor(1000 + Math.random() * 9000)}`,
+        username: onboardingData.username || `user${Math.floor(1000 + Math.random() * 9000)}`,
+        avatar: (onboardingData.name || 'U').charAt(0).toUpperCase(),
         memberSince: startIso
       },
       activeHabit: primaryHabit,

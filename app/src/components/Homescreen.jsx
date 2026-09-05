@@ -1897,29 +1897,18 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
                 {/* Form Input Post Baru (Hanya untuk Terverifikasi, Tamu Terkunci) */}
                 <div className="bg-white border border-[#C9BEFF] rounded-2xl p-4 shadow-sm space-y-3 relative overflow-hidden">
+                  {/* Bar Kunci Input Komunitas untuk Guest */}
                   {!isRegistered && (
                     <div 
                       onClick={() => requireRegistration(lang === 'id' ? 'membuat postingan di Komunitas' : 'post in the Community')}
-                      className="absolute inset-0 bg-[#FAF8FF]/90 backdrop-blur-[2px] z-10 flex items-center justify-between px-4 cursor-pointer"
+                      className="absolute inset-0 bg-[#FAF8FF]/95 backdrop-blur-[2px] z-10 flex items-center justify-center px-4 cursor-pointer gap-2"
                     >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#6367FF]/15 text-[#6367FF] flex items-center justify-center">
-                          <svg className="w-4 h-4 stroke-[#6367FF]" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <span className="text-xs font-black text-[#1E1B38] block">
-                            {lang === 'id' ? 'Mode Hanya Baca (Read-Only)' : 'Read-Only Mode'}
-                          </span>
-                          <span className="text-[10px] text-[#6D6796]">
-                            {lang === 'id' ? 'Daftar akun untuk curhat & posting cerita' : 'Register to share your thoughts'}
-                          </span>
-                        </div>
-                      </div>
-                      <span className="px-2.5 py-1 rounded-lg bg-[#6367FF] text-white font-black text-[10px] shadow-sm">
-                        {lang === 'id' ? 'Daftar' : 'Register'}
+                      <svg className="w-4 h-4 stroke-[#6367FF]" viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                      <span className="text-xs font-bold text-[#1E1B38]">
+                        {lang === 'id' ? 'Daftar untuk gabung komunitas' : 'Register to join community'}
                       </span>
                     </div>
                   )}
