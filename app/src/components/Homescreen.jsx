@@ -2315,14 +2315,14 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                     </label>
                     <span className="text-[10px] font-bold text-[#8494FF]">Maks. 8 Karakter</span>
                   </div>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-3.5 font-bold text-[#6D6796]">@</span>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3.5 font-bold text-xs text-[#6D6796] select-none pointer-events-none">@</span>
                     <input 
                       type="text" 
                       maxLength={8}
                       value={editUsername}
                       onChange={e => setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8))}
-                      className="w-full p-3.5 pl-8 rounded-xl border border-[#DDD5FF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
+                      className="w-full p-3 pl-8 rounded-xl border border-[#DDD5FF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
                     />
                   </div>
                 </div>
@@ -2493,16 +2493,16 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                       </label>
                       <span className="text-[10px] font-bold text-[#8494FF]">Maks. 8 Karakter</span>
                     </div>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-3.5 font-bold text-[#6D6796]">@</span>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3.5 font-bold text-xs text-[#6D6796] select-none pointer-events-none">@</span>
                       <input 
                         type="text" 
                         required
                         maxLength={8}
                         value={authUsername}
                         onChange={e => setAuthUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 8))}
-                        placeholder="rocky"
-                        className="w-full p-3.5 pl-8 rounded-xl border border-[#DDD5FF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
+                        placeholder="pejuang"
+                        className="w-full p-3 pl-8 rounded-xl border border-[#DDD5FF] bg-white text-xs text-[#1E1B38] font-bold outline-none focus:border-[#6367FF]"
                       />
                     </div>
                   </div>
