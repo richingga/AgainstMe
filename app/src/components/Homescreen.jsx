@@ -1877,24 +1877,14 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
             {activeSheet === 'community' && (
               <div className="space-y-4">
                 {/* Banner Info Ringkas Komunitas */}
-                <div className="bg-[#C9BEFF]/30 border border-[#C9BEFF] rounded-2xl p-3.5 text-xs text-[#1E1B38] flex items-center justify-between">
-                  <div>
-                    <span className="font-extrabold text-[#1E1B38] block">
-                      {lang === 'id' ? 'Kamu tidak sendirian berjuang.' : 'You are not fighting alone.'}
-                    </span>
-                    <span className="text-[11px] text-[#6D6796]">
-                      {lang === 'id' ? 'Posting ceritamu atau tag kawan pakai ' : 'Share your story or tag peers with '}
-                      <span className="font-bold text-[#6367FF]">@username</span>
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-[#6D6796] block">
-                      {lang === 'id' ? 'Identitasmu:' : 'Identity:'}
-                    </span>
-                    <span className="font-black text-xs text-[#6367FF]">
-                      @{user.username || 'rocky_warrior'}
-                    </span>
-                  </div>
+                <div className="bg-[#C9BEFF]/30 border border-[#C9BEFF] rounded-2xl p-3.5 text-xs text-[#1E1B38]">
+                  <span className="font-extrabold text-[#1E1B38] block">
+                    {lang === 'id' ? 'Kamu tidak sendirian.' : 'You are not alone.'}
+                  </span>
+                  <span className="text-[11px] text-[#6D6796]">
+                    {lang === 'id' ? 'Posting ceritamu atau tag dengan ' : 'Share your story or tag with '}
+                    <span className="font-bold text-[#6367FF]">@username</span>
+                  </span>
                 </div>
 
                 {/* Form Input Post Baru (Hanya untuk Terverifikasi, Tamu Terkunci) */}
