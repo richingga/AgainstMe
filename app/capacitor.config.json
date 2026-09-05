@@ -1,5 +1,9 @@
 {
   "appId": "id.againstme.app",
   "appName": "AgainstMe",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
 }
