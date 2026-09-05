@@ -1,16 +1,13 @@
 // Engine Sinkronisasi Dua Arah: Server (Registered) vs LocalStorage (Guest)
 const STORAGE_KEY = 'againstme_state_v1';
-// Deteksi environment:
-// PENTING: Hanya gunakan localhost:8090 jika dibuka langsung lewat browser dev STB (192.168.1.9 / 127.0.0.1)
-// Selain itu (Web https://againstme.my.id, maupun APK Android yang hostname-nya localhost/capacitor) WAJIB tembak API Tunnel https://api.againstme.my.id/api
-const isCapacitor = typeof window !== 'undefined' && (
-  window.Capacitor !== undefined ||
-  window.location.protocol === 'capacitor:' ||
-  window.location.protocol === 'ionic:' ||
-  window.location.hostname === 'localhost'
-);
-
-export const API_BASE_URL = (!isCapacitor && (window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')))
+// API_BASE_URL:
+// Jika dibuka di browser STB lokal dev (127.0.0.1 / 192.168.1.9), arahkan ke port 8090 lokal
+// SEMUA yang lain (website https://againstme.my.id di hp/laptop umum, dan aplikasi APK Android Capacitor) WAJIB tembak API Tunnel https://api.againstme.my.id/api
+export const API_BASE_URL = (
+  typeof window !== 'undefined' && 
+  (window.location.hostname === '127.0.0.1' || window.location.hostname === '192.168.1.9') &&
+  !window.Capacitor
+)
   ? `http://${window.location.hostname}:8090/api`
   : 'https://api.againstme.my.id/api';
 

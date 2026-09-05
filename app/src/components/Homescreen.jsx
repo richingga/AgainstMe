@@ -51,7 +51,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
     const updatedCheckins = [currentCheckin, ...otherDaysCheckins];
     updateAppState({ checkins: updatedCheckins });
-    showToast(lang === 'id' ? `Kondisi hari ini diperbarui: "${moodLabel}"` : `Today's mood updated: "${moodLabel}"`);
+    // Check-in tidak lagi memunculkan toast/notif mengganggu
 
     // Auto-share progres check-in ke Komunitas Pejuang jika user terdaftar
     if (isRegistered && user?.username) {
@@ -967,7 +967,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
         setActiveSheet(null);
         showToast(lang === 'id' ? 'Pendaftaran berhasil! Datamu tersimpan aman di server.' : 'Registration successful! Data backed up to server.');
       } catch (err) {
-        showToast(lang === 'id' ? `Gagal terhubung ke server: ${err.message || err}` : 'Cannot connect to server.');
+        console.error('Register error:', err);
+        const errMsg = err?.message || String(err);
+        showToast(lang === 'id' ? `Gagal terhubung (${errMsg})` : `Connection failed (${errMsg})`);
       }
     } else {
       try {
@@ -1790,12 +1792,12 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 {activeSheet === 'adminPanel' && (lang === 'id' ? 'Panel Moderasi Admin' : 'Admin Moderation')}
                 {activeSheet === 'privacyPolicy' && (lang === 'id' ? 'Kebijakan Privasi' : 'Privacy Policy')}
                 {activeSheet === 'manageHabits' && (lang === 'id' ? 'Kelola & Tambah Program Habit' : 'Manage & Add Habits')}
-                {activeSheet === 'community' && (lang === 'id' ? 'Ruang Komunitas Pejuang' : 'Warriors Community')}
-                {activeSheet === 'profile' && (lang === 'id' ? 'Profil Pejuang' : 'Warrior Profile')}
+                {activeSheet === 'community' && (lang === 'id' ? 'Ruang Komunitas' : 'Community')}
+                {activeSheet === 'profile' && (lang === 'id' ? 'Profil' : 'Profile')}
                 {activeSheet === 'badges' && (lang === 'id' ? 'Trofi' : 'Trophies')}
                 {activeSheet === 'editProfile' && (lang === 'id' ? 'Edit Profil' : 'Edit Profile')}
                 {activeSheet === 'editGoal' && (lang === 'id' ? 'Target Barang Impian' : 'Dream Goal Reward')}
-                {activeSheet === 'authModal' && (authMode === 'register' ? (lang === 'id' ? 'Daftar Akun Pejuang' : 'Create Warrior Account') : (lang === 'id' ? 'Masuk Akun' : 'Log In'))}
+                {activeSheet === 'authModal' && (authMode === 'register' ? (lang === 'id' ? 'Daftar Akun' : 'Create Account') : (lang === 'id' ? 'Masuk Akun' : 'Log In'))}
                 {activeSheet === 'chat' && (lang === 'id' ? 'Teman Berhenti' : 'Quit Companion')}
                 {activeSheet === 'sos' && (lang === 'id' ? 'Pusat Bantuan Cepat' : 'SOS Rescue')}
                 {activeSheet === 'logUrge' && (lang === 'id' ? 'Catat Godaan Judi' : 'Log Urge')}
@@ -2592,7 +2594,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
                 <div>
                   <label className="text-xs font-bold text-[#1E1B38] block mb-1">
-                    {lang === 'id' ? 'Bio / Kata Mutiara Pejuang' : 'Bio / Warrior Quote'}
+                    {lang === 'id' ? 'Bio / Kata Mutiara' : 'Bio / Personal Quote'}
                   </label>
                   <textarea 
                     value={editBio}
@@ -2658,7 +2660,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 >
                   <div>
                     <h4 className="font-extrabold text-sm text-[#1E1B38]">
-                      {lang === 'id' ? 'Pemulihan Akun Pejuang' : 'Account Recovery'}
+                      {lang === 'id' ? 'Pemulihan Akun' : 'Account Recovery'}
                     </h4>
                     <p className="text-xs text-[#6D6796] mt-1 leading-relaxed">
                       {lang === 'id' 
@@ -3864,7 +3866,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                         {lang === 'id' ? 'Kebijakan Privasi & Keamanan' : 'Privacy Policy & Security'}
                       </div>
                       <div className="text-[11px] text-[#6D6796]">
-                        {lang === 'id' ? 'Komitmen perlindungan data pejuang' : 'Our commitment to data protection'}
+                        {lang === 'id' ? 'Komitmen perlindungan data pengguna' : 'Our commitment to user data protection'}
                       </div>
                     </div>
                   </div>
@@ -4102,12 +4104,12 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
         </div>
       )}
 
-      {/* TOAST NOTIFIKASI SUKSES (PINDAH KE ATAS, MODERN DYNAMIC ISLAND / CAPSULE NOTIFICATION) */}
+      {/* TOAST NOTIFIKASI SUKSES (CENTER ATAS, RINGKAS, MINIMALIS) */}
       {toastMsg && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 max-w-[90vw] z-[100] animate-bounce">
-          <div className="px-5 py-3 bg-[#1E1B38]/95 backdrop-blur-xl text-white text-xs font-black rounded-2xl shadow-2xl shadow-[#1E1B38]/40 flex items-center gap-3 border border-[#8494FF]/40">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#6367FF] shadow-md shadow-[#6367FF] animate-pulse flex-shrink-0" />
-            <span className="tracking-wide text-white leading-tight">{toastMsg}</span>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-[85vw] pointer-events-none animate-fadeIn">
+          <div className="px-3.5 py-1.5 bg-[#1E1B38]/90 backdrop-blur-md text-white text-[11px] font-semibold rounded-full shadow-lg shadow-[#1E1B38]/20 flex items-center gap-2 border border-[#8494FF]/30">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#6367FF] shadow-sm shadow-[#6367FF] flex-shrink-0" />
+            <span className="truncate leading-tight text-white">{toastMsg}</span>
           </div>
         </div>
       )}
