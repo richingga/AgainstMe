@@ -210,12 +210,17 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
       fetchCommunityFeed()
         .then(res => {
           if (res.posts) {
-            // Mark setiap post dengan isLiked berdasarkan username user di likedBy array
-            const postsWithLikeStatus = res.posts.map(p => ({
+            // Normalisasi post agar kompatibel dengan feed frontend (author & habit & streakDays)
+            const normalizedPosts = res.posts.map(p => ({
               ...p,
-              isLiked: (p.likedBy || []).includes(user.username || '')
+              author: p.name || p.author || p.username || 'Pejuang',
+              habit: p.habit || 'PMO',
+              streakDays: p.streakDays !== undefined ? p.streakDays : (p.streak_days !== undefined ? p.streak_days : 0),
+              timeId: p.timeId || p.time_str || 'Barusan',
+              time: p.time || p.time_str || 'Just now',
+              isLiked: (p.likedBy || []).includes(user?.username || '')
             }));
-            updateAppState({ communityPosts: postsWithLikeStatus });
+            updateAppState({ communityPosts: normalizedPosts });
           }
         })
         .catch(err => console.error('Failed to fetch community feed:', err));
@@ -986,6 +991,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
   }
 
   function renderWithTags(text) {
+    if (!text) return null;
     const parts = text.split(/(@[a-zA-Z0-9_]+)/g);
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
@@ -1027,7 +1033,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
             />
           ) : (
             <div className="w-full h-full rounded-[14px] bg-white flex items-center justify-center font-black text-[#6367FF] text-sm">
-              {(user.username || user.name || 'P').charAt(0).toUpperCase()}
+              {(user?.username || user?.name || 'P').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
@@ -1884,11 +1890,11 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   {/* List Postingan Sesuai Tab Filter */}
                   <div className="space-y-3">
                     {(communityTab === 'mentions' ? mentionPosts : communityPosts).map(post => {
-                      const isMentioningMe = post.content.toLowerCase().includes(myUsernameTag);
+                      const isMentioningMe = (post.content || '').toLowerCase().includes(myUsernameTag);
                       // Tampilkan foto profil user aktif jika postingan milik user saat ini
                       const isMyPost = post.username === (user?.username || '');
                       const displayPhoto = isMyPost ? (user?.photoUrl || post.photoUrl) : post.photoUrl;
-                      const displayName = isMyPost ? (user?.name || post.author) : post.author;
+                      const displayName = isMyPost ? (user?.name || post.author || 'Pejuang') : (post.author || post.name || 'Pejuang');
 
                       return (
                         <div 
@@ -1907,7 +1913,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                                 />
                               ) : (
                                 <div className="w-8 h-8 rounded-full bg-[#ECE9FF] flex items-center justify-center font-black text-[#6367FF] text-xs">
-                                  {displayName.charAt(0).toUpperCase()}
+                                  {(displayName || 'P').charAt(0).toUpperCase()}
                                 </div>
                               )}
                               <div>
@@ -2005,7 +2011,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                     />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-[#ECE9FF] flex items-center justify-center font-black text-[#6367FF] text-2xl border-2 border-[#6367FF]/20">
-                      {(user.name || 'R').charAt(0).toUpperCase()}
+                      {(user?.name || 'R').charAt(0).toUpperCase()}
                     </div>
                   )}
 
