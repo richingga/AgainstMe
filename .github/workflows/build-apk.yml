@@ -42,26 +42,48 @@ jobs:
           cd app/android
           ./gradlew assembleDebug --stacktrace --no-daemon
 
-      - name: Rename APK with Commit SHA
+      - name: Get Version Number
+        id: version
         run: |
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          cp app/android/app/build/outputs/apk/debug/app-debug.apk AgainstMe-${SHORT_SHA}.apk
-          echo "APK_NAME=AgainstMe-${SHORT_SHA}.apk" >> $GITHUB_ENV
-          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+          VERSION_FILE=version.txt
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "1.0" > $VERSION_FILE
+          fi
+          CURRENT_VERSION=$(cat $VERSION_FILE)
+          echo "VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+          
+          # Increment minor version for next build
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          NEXT_MINOR=$((MINOR + 1))
+          echo "${MAJOR}.${NEXT_MINOR}" > $VERSION_FILE
 
-      - name: Publish to GitHub Releases (Auto-versioned by Commit)
+      - name: Commit Version File
+        run: |
+          git config user.name "nggaeth"
+          git config user.email "nggaeth@users.noreply.github.com"
+          git add version.txt
+          git commit -m "chore: bump version to next build" || echo "No version change"
+          git push || echo "Nothing to push"
+
+      - name: Rename APK with Version
+        run: |
+          cp app/android/app/build/outputs/apk/debug/app-debug.apk AgainstMe-v${{ env.VERSION }}.apk
+          echo "APK_NAME=AgainstMe-v${{ env.VERSION }}.apk" >> $GITHUB_ENV
+
+      - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ env.SHORT_SHA }}
-          name: "AgainstMe Build ${{ env.SHORT_SHA }}"
+          tag_name: v${{ env.VERSION }}
+          name: "AgainstMe v${{ env.VERSION }}"
           body: |
-            🚀 **AgainstMe APK Build**
+            AgainstMe - Aplikasi Pemulihan Diri dari Kebiasaan Buruk
             
-            📦 Commit: `${{ github.sha }}`
-            🔨 Build: ${{ env.SHORT_SHA }}
-            📅 Tanggal: ${{ github.event.head_commit.timestamp }}
+            Versi: ${{ env.VERSION }}
+            Tanggal: ${{ github.event.head_commit.timestamp }}
+            Commit: ${{ github.sha }}
             
-            Klik **${{ env.APK_NAME }}** di bawah untuk download langsung ke HP Android.
+            Download APK di bawah untuk install di HP Android.
           files: ${{ env.APK_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

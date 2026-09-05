@@ -2566,7 +2566,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-xs font-bold text-[#1E1B38]">
-                      {lang === 'id' ? 'Username Komunitas (@handle)' : 'Community Username (@handle)'}
+                      {lang === 'id' ? 'Username' : 'Username'}
                     </label>
                     <span className="text-[10px] font-bold text-[#8494FF]">Maks. 8 Karakter</span>
                   </div>
@@ -2744,7 +2744,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   <div>
                     <div className="flex justify-between items-center mb-1">
                       <label className="text-xs font-bold text-[#1E1B38]">
-                        {lang === 'id' ? 'Username Komunitas (@handle)' : 'Username (@handle)'}
+                        {lang === 'id' ? 'Username' : 'Username'}
                       </label>
                       <span className="text-[10px] font-bold text-[#8494FF]">Maks. 8 Karakter</span>
                     </div>
