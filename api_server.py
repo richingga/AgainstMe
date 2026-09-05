@@ -124,7 +124,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             
             # Ambil 100 post terbaru (sorted by created_at DESC)
             cursor.execute('''
-                SELECT id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by, habit, streak_days
+                SELECT id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by, habit, streak_days, rank
                 FROM community_posts
                 ORDER BY created_at DESC
                 LIMIT 100
@@ -145,7 +145,8 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
                     'likes': row[8],
                     'likedBy': json.loads(row[9]) if row[9] else [],
                     'habit': row[10] or 'PMO',
-                    'streakDays': row[11] if row[11] is not None else 0
+                    'streakDays': row[11] if row[11] is not None else 0,
+                    'rank': row[12] or ''
                 })
             
             self.send_response(200)
@@ -529,14 +530,15 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             
             habit = body.get('habit', 'PMO')
             streak_days = body.get('streakDays', 0)
+            rank = body.get('rank', '')
             
             # Simpan ke database
             conn = get_db_connection()
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO community_posts (id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by, habit, streak_days)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '[]', ?, ?)
-            ''', (post_id, user_id, username, name, avatar, photo_url, censored_content, created_at, habit, streak_days))
+                INSERT INTO community_posts (id, user_id, username, name, avatar, photo_url, content, created_at, likes, liked_by, habit, streak_days, rank)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '[]', ?, ?, ?)
+            ''', (post_id, user_id, username, name, avatar, photo_url, censored_content, created_at, habit, streak_days, rank))
             conn.commit()
             conn.close()
             

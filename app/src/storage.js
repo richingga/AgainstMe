@@ -67,7 +67,7 @@ export const initialAppData = {
       streakDays: 14,
       time: '15m ago',
       timeId: '15m lalu',
-      content: 'Hari ke-14 bebas PMO! Kuncinya kalau otak mulai mikir aneh-aneh pas malam, langsung lempar HP ke meja terus push-up 20 kali. Semangat buat @rocky_warrior dan kawan-kawan! 🔥',
+      content: 'Hari ke 14 bebas PMO! Kuncinya kalau otak mulai mikir aneh aneh pas malam, langsung lempar HP ke meja terus push up 20 kali. Semangat buat @rocky_warrior dan kawan kawan! 🔥',
       likes: 12,
       isLiked: false
     },

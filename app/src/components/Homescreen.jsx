@@ -57,10 +57,11 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     if (isRegistered && user?.username) {
       const currentDays = timeDiff.days || 0;
       const targetHabitName = habitLabelMap[activeHabit] || 'PMO';
+      const myRank = activeHabit === 'pmo' ? pmoInfo.title : '';
       
-      // Susun pesan natural check-in
+      // Susun pesan natural check-in tanpa strip (-)
       const autoPostContent = lang === 'id'
-        ? `Hari ke-${currentDays} tanpa ${targetHabitName}! Kondisiku hari ini terasa: ${moodLabel}. Tetap semangat berjuang bareng kawan-kawan pejuang! 🔥`
+        ? `Hari ke ${currentDays} tanpa ${targetHabitName}! Kondisiku hari ini terasa: ${moodLabel}. Tetap semangat berjuang bareng kawan kawan pejuang! 🔥`
         : `Day ${currentDays} free from ${targetHabitName}! Feeling ${moodLabel} today. Keep fighting together everyone! 🔥`;
 
       const autoCheckinPost = {
@@ -72,6 +73,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
         photoUrl: user?.photoUrl || null,
         habit: targetHabitName,
         streakDays: currentDays,
+        rank: myRank,
         time: 'Just now',
         timeId: 'Barusan',
         content: autoPostContent,
@@ -268,18 +270,19 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     updateAppState({ chatMessages: newMessages });
   }
 
-  // Load feed komunitas dari server saat buka tab komunitas
+  // Load feed komunitas dari server saat buka tab komunitas atau saat aplikasi pertama dimuat
   useEffect(() => {
-    if (activeSheet === 'community' && isRegistered && user?.username) {
+    function loadFeed() {
       fetchCommunityFeed()
         .then(res => {
-          if (res.posts) {
-            // Normalisasi post agar kompatibel dengan feed frontend (author & habit & streakDays)
+          if (res && res.posts) {
+            // Normalisasi post agar kompatibel dengan feed frontend (author & habit & streakDays & rank)
             const normalizedPosts = res.posts.map(p => ({
               ...p,
               author: p.name || p.author || p.username || 'Pejuang',
               habit: p.habit || 'PMO',
               streakDays: p.streakDays !== undefined ? p.streakDays : (p.streak_days !== undefined ? p.streak_days : 0),
+              rank: p.rank || '',
               timeId: p.timeId || p.time_str || 'Barusan',
               time: p.time || p.time_str || 'Just now',
               isLiked: (p.likedBy || []).includes(user?.username || '')
@@ -289,7 +292,18 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
         })
         .catch(err => console.error('Failed to fetch community feed:', err));
     }
-  }, [activeSheet, isRegistered, user?.username]);
+
+    loadFeed();
+
+    // Auto-polling jika tab komunitas sedang aktif agar obrolan antar HP/PC langsung muncul
+    let pollInterval = null;
+    if (activeSheet === 'community') {
+      pollInterval = setInterval(loadFeed, 5000);
+    }
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [activeSheet, user?.username]);
 
   // Hitung jumlah chat AI yang belum dibaca (pesan AI yang masuk setelah lastReadChatTime)
   const unreadAiCount = chatMessages.filter(m => {
@@ -654,17 +668,18 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     if (!postInput.trim()) return;
 
     const newPost = {
-      id: Date.now().toString(),
-      userId: user?.username || 'rocky',
-      username: user?.username || 'rocky',
-      name: user?.name || 'Rocky',
+      id: String(Date.now()),
+      userId: user?.username || 'user',
+      username: user?.username || 'pejuang',
+      name: user?.name || user?.username || 'Pejuang',
       avatar: (user?.name || 'Rocky')[0].toUpperCase(),
       photoUrl: user?.photoUrl || null,
       habit: habitLabelMap[activeHabit] || 'PMO',
       streakDays: timeDiff.days || 0,
+      rank: activeHabit === 'pmo' ? pmoInfo.title : '',
       time: 'Just now',
       timeId: 'Barusan',
-      content: postInput.trim(),
+      content: postInput.trim().replace(/Hari ke-(\d+)/g, 'Hari ke $1'),
       createdAt: new Date().toISOString(),
       likes: 0,
       likedBy: [],
@@ -1901,16 +1916,28 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                     <span className="text-[10px] font-bold text-[#6D6796] whitespace-nowrap">
                       {lang === 'id' ? 'Tag cepat:' : 'Quick tag:'}
                     </span>
-                    {['@dimas_clean', '@bayu_anti_slot', '@eko_fresh'].map(tag => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => setPostInput(prev => `${prev} ${tag} `)}
-                        className="text-[10px] font-bold text-[#1E1B38] bg-[#C9BEFF]/30 hover:bg-[#C9BEFF]/60 px-2 py-1 rounded-lg whitespace-nowrap transition-colors"
-                      >
-                        {tag}
-                      </button>
-                    ))}
+                    {(() => {
+                      // Ambil user aktif baru-baru ini dari communityPosts (deduplikasi & filter selain diri sendiri)
+                      const recentUsers = Array.from(
+                        new Set(
+                          (communityPosts || [])
+                            .map(p => p.username)
+                            .filter(u => u && u !== 'admin' && u !== (user?.username || ''))
+                        )
+                      ).slice(0, 5);
+                      
+                      const quickTags = ['@admin', ...recentUsers.map(u => `@${u}`)];
+                      return quickTags.map(tag => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => setPostInput(prev => `${prev} ${tag} `)}
+                          className="text-[10px] font-bold text-[#1E1B38] bg-[#C9BEFF]/30 hover:bg-[#C9BEFF]/60 px-2 py-1 rounded-lg whitespace-nowrap transition-colors"
+                        >
+                          {tag}
+                        </button>
+                      ));
+                    })()}
                   </div>
 
                   <button 
@@ -1984,26 +2011,33 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                                 </div>
                               )}
                               <div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-extrabold text-xs text-[#1E1B38]">{displayName}</span>
-                                  <span 
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span
                                     onClick={() => {
                                       setPostInput(prev => `${prev} @${post.username} `);
                                       showToast(lang === 'id' ? `Tag @${post.username}` : `Tag @${post.username}`);
                                     }}
-                                    className="text-[11px] font-bold text-[#6367FF] hover:underline cursor-pointer"
+                                    className="font-extrabold text-xs text-[#1E1B38] hover:text-[#6367FF] cursor-pointer"
                                   >
                                     @{post.username}
                                   </span>
+
+                                  {/* Tingkat Kedaulatan di Komunitas */}
+                                  {post.rank && (
+                                    <span className="px-2 py-0.5 rounded-md bg-[#FAF8FF] text-[#6367FF] text-[9px] font-black border border-[#C9BEFF]">
+                                      {post.rank}
+                                    </span>
+                                  )}
+
                                   {isMentioningMe && (
                                     <span className="px-1.5 py-0.5 rounded bg-[#6367FF] text-white text-[9px] font-black">
                                       {lang === 'id' ? 'MENYAPAMU' : 'TAGGED YOU'}
                                     </span>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-2 text-[10px] text-[#6D6796]">
+                                <div className="flex items-center gap-2 text-[10px] text-[#6D6796] mt-0.5">
                                   <span className="font-semibold text-[#6367FF]">
-                                    {post.habit} · {lang === 'id' ? `Hari ke-${post.streakDays}` : `Day ${post.streakDays}`}
+                                    {post.habit} · {lang === 'id' ? `Hari ke ${post.streakDays}` : `Day ${post.streakDays}`}
                                   </span>
                                   <span>·</span>
                                   <span>{getRelativeTimeStr(post.createdAt, lang)}</span>
@@ -2083,11 +2117,17 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   )}
 
                   <div className="flex-1">
-                    <h4 className="font-extrabold text-lg text-[#1E1B38]">{user.name || 'Rocky'}</h4>
-                    <span className="text-xs font-bold text-[#6367FF] block">
-                      @{user.username || 'rocky_warrior'}
-                    </span>
-                    <span className="text-[11px] text-[#6D6796] mt-0.5 block">
+                    <h4 className="font-extrabold text-lg text-[#1E1B38]">@{user.username || 'rocky_warrior'}</h4>
+                    {/* Tingkat Kedaulatan di Profil */}
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#FAF8FF] text-[#6367FF] border border-[#C9BEFF]">
+                        {pmoInfo.rank}
+                      </span>
+                      <span className="text-xs font-bold text-[#1E1B38]">
+                        {pmoInfo.title}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-[#6D6796] mt-1 block">
                       {isRegistered 
                         ? (lang === 'id' ? 'Akun Terverifikasi Komunitas' : 'Verified Community Member') 
                         : (lang === 'id' ? 'Akun Tamu (Data Lokal)' : 'Guest Account (Local Data)')}
