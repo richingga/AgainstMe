@@ -57,7 +57,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     if (isRegistered && user?.username) {
       const currentDays = timeDiff.days || 0;
       const targetHabitName = habitLabelMap[activeHabit] || 'PMO';
-      const myRank = activeHabit === 'pmo' ? pmoInfo.title : '';
+      const myRank = pmoInfo.title || 'Inisiat Pejuang';
       
       // Susun pesan natural check-in tanpa strip (-)
       const autoPostContent = lang === 'id'
@@ -277,16 +277,19 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
         .then(res => {
           if (res && res.posts) {
             // Normalisasi post agar kompatibel dengan feed frontend (author & habit & streakDays & rank)
-            const normalizedPosts = res.posts.map(p => ({
-              ...p,
-              author: p.name || p.author || p.username || 'Pejuang',
-              habit: p.habit || 'PMO',
-              streakDays: p.streakDays !== undefined ? p.streakDays : (p.streak_days !== undefined ? p.streak_days : 0),
-              rank: p.rank || '',
-              timeId: p.timeId || p.time_str || 'Barusan',
-              time: p.time || p.time_str || 'Just now',
-              isLiked: (p.likedBy || []).includes(user?.username || '')
-            }));
+            // Filter buang dummy post lama jika ada yang nyasar
+            const normalizedPosts = res.posts
+              .filter(p => p && !['p1', 'p2', 'p3'].includes(p.id))
+              .map(p => ({
+                ...p,
+                author: p.name || p.author || p.username || 'Pejuang',
+                habit: p.habit || 'PMO',
+                streakDays: p.streakDays !== undefined ? p.streakDays : (p.streak_days !== undefined ? p.streak_days : 0),
+                rank: p.rank || '',
+                timeId: p.timeId || p.time_str || 'Barusan',
+                time: p.time || p.time_str || 'Just now',
+                isLiked: (p.likedBy || []).includes(user?.username || '')
+              }));
             updateAppState({ communityPosts: normalizedPosts });
           }
         })
@@ -295,10 +298,10 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
     loadFeed();
 
-    // Auto-polling jika tab komunitas sedang aktif agar obrolan antar HP/PC langsung muncul
+    // Auto-polling setiap 3 detik jika tab komunitas aktif agar obrolan antar HP & PC langsung nyaut
     let pollInterval = null;
     if (activeSheet === 'community') {
-      pollInterval = setInterval(loadFeed, 5000);
+      pollInterval = setInterval(loadFeed, 3000);
     }
     return () => {
       if (pollInterval) clearInterval(pollInterval);
@@ -676,10 +679,10 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
       photoUrl: user?.photoUrl || null,
       habit: habitLabelMap[activeHabit] || 'PMO',
       streakDays: timeDiff.days || 0,
-      rank: activeHabit === 'pmo' ? pmoInfo.title : '',
+      rank: pmoInfo.title || 'Inisiat Pejuang',
       time: 'Just now',
       timeId: 'Barusan',
-      content: postInput.trim().replace(/Hari ke-(\d+)/g, 'Hari ke $1'),
+      content: postInput.trim().replace(/Hari ke-(\d+)/gi, 'Hari ke $1').replace(/Hari-ke/gi, 'Hari ke'),
       createdAt: new Date().toISOString(),
       likes: 0,
       likedBy: [],
@@ -1074,7 +1077,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
   function renderWithTags(text) {
     if (!text) return null;
-    const parts = text.split(/(@[a-zA-Z0-9_]+)/g);
+    // Bersihkan karakter strip pada Hari ke-X menjadi Hari ke X
+    const cleanedText = text.replace(/Hari ke-(\d+)/gi, 'Hari ke $1').replace(/Hari-ke/gi, 'Hari ke');
+    const parts = cleanedText.split(/(@[a-zA-Z0-9_]+)/g);
     return parts.map((part, i) => {
       if (part.startsWith('@')) {
         const isMe = part.toLowerCase() === myUsernameTag;
@@ -1913,8 +1918,8 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   />
 
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                    <span className="text-[10px] font-bold text-[#6D6796] whitespace-nowrap">
-                      {lang === 'id' ? 'Tag cepat:' : 'Quick tag:'}
+                    <span className="text-[10px] font-black text-[#6367FF] whitespace-nowrap bg-[#ECE9FF] px-2 py-0.5 rounded-md">
+                      {lang === 'id' ? 'Tag Cepat' : 'Quick Tag'}
                     </span>
                     {(() => {
                       // Ambil user aktif baru-baru ini dari communityPosts (deduplikasi & filter selain diri sendiri)
@@ -1924,15 +1929,22 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                             .map(p => p.username)
                             .filter(u => u && u !== 'admin' && u !== (user?.username || ''))
                         )
-                      ).slice(0, 5);
+                      ).slice(0, 8);
                       
                       const quickTags = ['@admin', ...recentUsers.map(u => `@${u}`)];
                       return quickTags.map(tag => (
                         <button
                           key={tag}
                           type="button"
-                          onClick={() => setPostInput(prev => `${prev} ${tag} `)}
-                          className="text-[10px] font-bold text-[#1E1B38] bg-[#C9BEFF]/30 hover:bg-[#C9BEFF]/60 px-2 py-1 rounded-lg whitespace-nowrap transition-colors"
+                          onClick={() => {
+                            setPostInput(prev => `${prev.trim()} ${tag} `);
+                            showToast(lang === 'id' ? `Men-tag ${tag}` : `Tagged ${tag}`);
+                          }}
+                          className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg whitespace-nowrap transition-all active:scale-95 border ${
+                            tag === '@admin' 
+                              ? 'text-white bg-[#6367FF] border-[#6367FF] shadow-xs' 
+                              : 'text-[#1E1B38] bg-white border-[#C9BEFF] hover:bg-[#FAF8FF]'
+                          }`}
                         >
                           {tag}
                         </button>
@@ -1988,7 +2000,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                       // Tampilkan foto profil user aktif jika postingan milik user saat ini
                       const isMyPost = post.username === (user?.username || '');
                       const displayPhoto = isMyPost ? (user?.photoUrl || post.photoUrl) : post.photoUrl;
-                      const displayName = isMyPost ? (user?.name || post.author || 'Pejuang') : (post.author || post.name || 'Pejuang');
+                      const postUserInitial = (post.username || 'U').charAt(0).toUpperCase();
 
                       return (
                         <div 
@@ -2002,12 +2014,12 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                               {displayPhoto ? (
                                 <img 
                                   src={displayPhoto} 
-                                  alt={displayName} 
+                                  alt={`@${post.username}`} 
                                   className="w-8 h-8 rounded-full object-cover border border-[#6367FF]/30"
                                 />
                               ) : (
                                 <div className="w-8 h-8 rounded-full bg-[#ECE9FF] flex items-center justify-center font-black text-[#6367FF] text-xs">
-                                  {(displayName || 'P').charAt(0).toUpperCase()}
+                                  {postUserInitial}
                                 </div>
                               )}
                               <div>
@@ -2023,9 +2035,9 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                                   </span>
 
                                   {/* Tingkat Kedaulatan di Komunitas */}
-                                  {post.rank && (
+                                  {(post.rank || (post.streakDays !== undefined ? getPmoRank(post.streakDays, lang).title : null)) && (
                                     <span className="px-2 py-0.5 rounded-md bg-[#FAF8FF] text-[#6367FF] text-[9px] font-black border border-[#C9BEFF]">
-                                      {post.rank}
+                                      {post.rank || getPmoRank(post.streakDays, lang).title}
                                     </span>
                                   )}
 
@@ -2117,14 +2129,14 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
                   )}
 
                   <div className="flex-1">
-                    <h4 className="font-extrabold text-lg text-[#1E1B38]">@{user.username || 'rocky_warrior'}</h4>
+                    <h4 className="font-extrabold text-lg text-[#1E1B38]">@{user.username || 'pejuang'}</h4>
                     {/* Tingkat Kedaulatan di Profil */}
                     <div className="flex items-center gap-1.5 mt-1">
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#FAF8FF] text-[#6367FF] border border-[#C9BEFF]">
-                        {pmoInfo.rank}
+                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#6367FF]/10 text-[#6367FF] border border-[#6367FF]/30">
+                        {lang === 'id' ? 'Tingkat Kedaulatan' : 'Sovereignty Tier'}
                       </span>
-                      <span className="text-xs font-bold text-[#1E1B38]">
-                        {pmoInfo.title}
+                      <span className="text-xs font-extrabold text-[#1E1B38]">
+                        {pmoInfo.title || (lang === 'id' ? 'Inisiat Pejuang' : 'Warrior Initiate')}
                       </span>
                     </div>
                     <span className="text-[11px] text-[#6D6796] mt-1 block">

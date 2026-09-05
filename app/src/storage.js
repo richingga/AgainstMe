@@ -58,44 +58,7 @@ export const initialAppData = {
       relapses: []
     }
   },
-  communityPosts: [
-    {
-      id: 'p1',
-      author: 'Dimas',
-      username: 'dimas_clean',
-      habit: 'PMO',
-      streakDays: 14,
-      time: '15m ago',
-      timeId: '15m lalu',
-      content: 'Hari ke 14 bebas PMO! Kuncinya kalau otak mulai mikir aneh aneh pas malam, langsung lempar HP ke meja terus push up 20 kali. Semangat buat @rocky_warrior dan kawan kawan! 🔥',
-      likes: 12,
-      isLiked: false
-    },
-    {
-      id: 'p2',
-      author: 'Bayu',
-      username: 'bayu_anti_slot',
-      habit: 'Judi',
-      streakDays: 30,
-      time: '1h ago',
-      timeId: '1j lalu',
-      content: 'Satu bulan penuh gak deposit receh maupun gede. Dulu ngerasa rugi kalau gak balas kekalahan, sekarang sadar kalau gak main itu udah auto menang 100%. Uang tabungan utuh!',
-      likes: 28,
-      isLiked: true
-    },
-    {
-      id: 'p3',
-      author: 'Eko',
-      username: 'eko_fresh',
-      habit: 'Rokok',
-      streakDays: 7,
-      time: '3h ago',
-      timeId: '3j lalu',
-      content: 'Nafas udah mulai lega, gak batuk pas bangun tidur. @dimas_clean makasih sarannya buat selalu bawa permen jahe pas nongkrong bareng temen!',
-      likes: 9,
-      isLiked: false
-    }
-  ],
+  communityPosts: [],
   checkins: [],
   chatMessages: []
 };
@@ -106,11 +69,15 @@ export function loadAppState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initialAppData;
     const parsed = JSON.parse(raw);
+    // Filter postingan dummy lokal lama (id: p1, p2, p3) agar feed 100% murni server
+    const rawPosts = parsed.communityPosts || [];
+    const cleanLocalPosts = Array.isArray(rawPosts) ? rawPosts.filter(p => p && !['p1', 'p2', 'p3'].includes(p.id)) : [];
+
     return { 
-      ...initialAppData, 
+      ...initialAppData,
       ...parsed,
       user: { ...initialAppData.user, ...(parsed.user || {}) },
-      communityPosts: parsed.communityPosts || initialAppData.communityPosts,
+      communityPosts: cleanLocalPosts,
       chatMessages: parsed.chatMessages || [],
       aiProactiveHistory: parsed.aiProactiveHistory || [],
       lastReadChatTime: parsed.lastReadChatTime || Date.now(),
