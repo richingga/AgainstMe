@@ -17,10 +17,22 @@ export default function App() {
     
     const chosenDateStr = onboardingData.startDate;
     const todayYmd = new Date().toISOString().split('T')[0];
-    // Jika tanggal yang dipilih adalah hari ini, pakai waktu saat ini persis (detik ini) agar timer mulai dari 00:00:00
-    const startIso = chosenDateStr
-      ? (chosenDateStr === todayYmd ? new Date().toISOString() : new Date(`${chosenDateStr}T00:00:00`).toISOString())
-      : new Date().toISOString();
+    
+    // Validasi aman tanggal mulai
+    let startIso = new Date().toISOString();
+    if (chosenDateStr) {
+      if (chosenDateStr.includes('T')) {
+        // Sudah format ISO lengkap
+        startIso = chosenDateStr;
+      } else if (chosenDateStr === todayYmd) {
+        // Hari ini -> mulai detik ini
+        startIso = new Date().toISOString();
+      } else {
+        // Tanggal masa lalu YYYY-MM-DD
+        const parsed = new Date(`${chosenDateStr}T00:00:00`);
+        startIso = isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+      }
+    }
 
     // Pastikan goal terisi atau dapat random
     let sharedGoal = onboardingData.savingsGoal;
