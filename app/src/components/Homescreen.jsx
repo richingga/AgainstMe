@@ -583,11 +583,15 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
     const newPost = {
       id: Date.now().toString(),
-      userId: user.username || 'guest',
-      username: user.username || 'rocky_warrior',
-      name: user.name || 'Rocky',
-      avatar: (user.name || 'Rocky')[0].toUpperCase(),
-      photoUrl: user.photoUrl || null,
+      userId: user?.username || 'rocky',
+      username: user?.username || 'rocky',
+      name: user?.name || 'Rocky',
+      avatar: (user?.name || 'Rocky')[0].toUpperCase(),
+      photoUrl: user?.photoUrl || null,
+      habit: habitLabelMap[activeHabit] || 'PMO',
+      streakDays: timeDiff.days || 0,
+      time: 'Just now',
+      timeId: 'Barusan',
       content: postInput.trim(),
       createdAt: new Date().toISOString(),
       likes: 0,
@@ -595,25 +599,35 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
       isLiked: false
     };
 
+    // 1. Update State Lokal Langsung (Optimistic UI - Dijamin tidak stuck offline)
+    updateAppState({
+      communityPosts: [newPost, ...communityPosts]
+    });
+    setPostInput('');
+    showToast(lang === 'id' ? 'Ceritamu terbit di komunitas!' : 'Post published to community!');
+
+    // 2. Sync ke Server di Background
     try {
-      // Kirim ke server (validasi + simpan)
       const res = await postToCommunity(newPost);
-      if (res.error) {
-        alert(res.error);
+      if (res && res.error) {
+        // Jika kena filter badwords, baru beri peringatan dan rollback
+        showToast(res.error);
+        updateAppState({
+          communityPosts: communityPosts.filter(p => p.id !== newPost.id)
+        });
         return;
       }
-
-      // Reload feed dari server setelah post berhasil
-      const feedRes = await fetchCommunityFeed();
-      if (feedRes.posts) {
-        updateAppState({ communityPosts: feedRes.posts });
+      // Jika disensor, update konten yang disensor
+      if (res && res.censored_content && res.censored_content !== newPost.content) {
+        updateAppState({
+          communityPosts: [
+            { ...newPost, content: res.censored_content },
+            ...communityPosts
+          ]
+        });
       }
-
-      setPostInput('');
-      showToast(lang === 'id' ? 'Ceritamu terkirim ke komunitas!' : 'Post published to community!');
     } catch (e) {
-      console.error('Post error:', e);
-      alert(lang === 'id' ? 'Gagal mengirim postingan. Cek koneksi internet.' : 'Failed to post. Check your connection.');
+      console.warn('Background sync failed, kept in local state', e);
     }
   }
 

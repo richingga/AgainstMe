@@ -103,8 +103,8 @@ PERSONA & GAYA BICARA:
 class ApiHandler(http.server.BaseHTTPRequestHandler):
     def _send_cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept')
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -494,7 +494,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({'success': True, 'message': f'User @{target_user} status updated'}).encode('utf-8'))
 
         # 6. POST KOMUNITAS BARU (SIMPAN KE DATABASE SERVER)
-        elif self.path == '/api/community/post':
+        elif self.path == '/api/community/post' or self.path.startswith('/api/community/post'):
             post_id = body.get('id', '')
             user_id = body.get('userId', '')
             username = body.get('username', '').strip().lower()
@@ -546,7 +546,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             return
 
         # 7. LIKE/UNLIKE POST KOMUNITAS
-        elif self.path == '/api/community/like':
+        elif self.path == '/api/community/like' or self.path.startswith('/api/community/like'):
             post_id = body.get('postId', '')
             username = body.get('username', '').strip().lower()
             action = body.get('action', 'like')  # 'like' atau 'unlike'
@@ -603,7 +603,7 @@ class ApiHandler(http.server.BaseHTTPRequestHandler):
             return
 
         # 9. DELETE POST KOMUNITAS
-        elif self.path == '/api/community/delete':
+        elif self.path == '/api/community/delete' or self.path.startswith('/api/community/delete'):
             post_id = body.get('postId', '')
             username = body.get('username', '').strip().lower()
             
