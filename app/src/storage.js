@@ -1,6 +1,10 @@
 // Engine Sinkronisasi Dua Arah: Server (Registered) vs LocalStorage (Guest)
 const STORAGE_KEY = 'againstme_state_v1';
-export const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')
+// Deteksi environment: di APK Android Capacitor, hostname adalah 'localhost'
+// Jadi jangan arahkan localhost ke port 8090 lokal ponsel, melainkan ke server tunnel produksi
+const isLocalDevelopment = (window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) && !window.Capacitor;
+
+export const API_BASE_URL = isLocalDevelopment
   ? `http://${window.location.hostname}:8090/api`
   : 'https://api.againstme.my.id/api';
 

@@ -104,6 +104,10 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
       };
     }
 
+    // Default username guest acak agar tidak bentrok atau template
+    const guestNum = Math.floor(1000 + Math.random() * 9000);
+    const defaultUsername = `user${guestNum}`;
+
     onComplete({
       habits: selectedHabits,
       startDate: startIso,
@@ -115,8 +119,8 @@ export default function LandingOnboarding({ onComplete, onLoginSuccess, lang, on
       doseCost: parseNumberInput(doseCost) || 200000,
       dosePeriod: dosePeriod || 'day',
       savingsGoal: goalObj,
-      name: 'Pejuang',
-      username: 'pejuang'
+      name: defaultUsername,
+      username: defaultUsername
     });
   }
 

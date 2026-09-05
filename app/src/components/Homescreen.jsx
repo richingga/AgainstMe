@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getPmoRank } from '../constants/pmo';
 import { formatCurrency, formatNumberInput, parseNumberInput } from '../utils/currency';
-import { registerUserOnServer, loginUserOnServer, resetPasswordOnServer, deleteAccountOnServer, fetchAdminUsers, banUserByAdmin, postToCommunity, fetchCommunityFeed, toggleCommunityLike, deleteCommunityPost } from '../storage';
+import { API_BASE_URL, registerUserOnServer, loginUserOnServer, resetPasswordOnServer, deleteAccountOnServer, fetchAdminUsers, banUserByAdmin, postToCommunity, fetchCommunityFeed, toggleCommunityLike, deleteCommunityPost } from '../storage';
 import { getRandomGoal } from '../constants/goals';
 import { HABIT_SOS_DATA } from '../constants/sosData';
 import SmartBreathingModal from './SmartBreathingModal';
@@ -891,9 +891,7 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
     setIsAiTyping(true);
 
     try {
-      const chatApiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')
-        ? `http://${window.location.hostname}:8090/api/chat`
-        : 'https://api.againstme.my.id/api/chat';
+      const chatApiUrl = `${API_BASE_URL}/chat`;
       const res = await fetch(chatApiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -955,14 +953,21 @@ export default function Homescreen({ appState, updateAppState, onReset }) {
 
         updateAppState({
           isRegistered: true,
-          user: registeredUser
+          user: registeredUser,
+          chatMessages: [
+            {
+              id: 'm1',
+              sender: 'ai',
+              text: lang === 'id' 
+                ? `Hai ${cleanUsername}, aku Maya, kalau butuh temen ngobrol, cerita ke aku yaa..`
+                : `Hey ${cleanUsername}, I'm Maya. If you need someone to talk to, just share with me..`
+            }
+          ]
         });
         setActiveSheet(null);
         showToast(lang === 'id' ? 'Pendaftaran berhasil! Datamu tersimpan aman di server.' : 'Registration successful! Data backed up to server.');
       } catch (err) {
-        updateAppState({ isRegistered: true, user: registeredUser });
-        setActiveSheet(null);
-        showToast(lang === 'id' ? 'Akun aktif di perangkat ini!' : 'Account registered locally!');
+        showToast(lang === 'id' ? `Gagal terhubung ke server: ${err.message || err}` : 'Cannot connect to server.');
       }
     } else {
       try {
